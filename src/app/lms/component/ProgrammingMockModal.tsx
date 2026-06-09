@@ -1711,7 +1711,7 @@ const [showQuestionSidebar, setShowQuestionSidebar] = useState(true);
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
         
-        await axios.post('https://lms-smartcliff.vercel.app/exercise/lock', {
+        await axios.post('https://lms-server-1-v648.onrender.com/exercise/lock', {
           courseId,
           exerciseId,
           category,
@@ -1808,7 +1808,7 @@ const [showQuestionSidebar, setShowQuestionSidebar] = useState(true);
 
     try {
       const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-      await axios.post('https://lms-smartcliff.vercel.app/exercise/lock', {
+      await axios.post('https://lms-server-1-v648.onrender.com/exercise/lock', {
         courseId,
         exerciseId,
         category,
@@ -2177,7 +2177,7 @@ const [showQuestionSidebar, setShowQuestionSidebar] = useState(true);
 
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-        const response = await axios.get('https://lms-smartcliff.vercel.app/exercise/status', {
+        const response = await axios.get('https://lms-server-1-v648.onrender.com/exercise/status', {
           params: { courseId, exerciseId, category, subcategory },
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -2227,7 +2227,7 @@ const [showQuestionSidebar, setShowQuestionSidebar] = useState(true);
   //     }
 
   //     const response = await fetch(
-  //       `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+  //       `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
   //       {
   //         headers: {  
   //           'Authorization': `Bearer ${token}`,
@@ -3736,7 +3736,7 @@ document.addEventListener('DOMContentLoaded', init${name.charAt(0).toUpperCase()
       };
 
       const response = await axios.post(
-        'https://lms-smartcliff.vercel.app/courses/answers/submit-multiple-files',
+        'https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files',
         payload,
         {
           headers: {

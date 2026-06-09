@@ -12,7 +12,7 @@ import { MessageCircle, X, Megaphone } from "lucide-react";
 import { getSocket } from "@/apiServices/socketClient";
 import { useAuthStore } from "@/stores/authStore";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-smartcliff.vercel.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
 
 interface Msg {
   _id: string;

@@ -247,8 +247,8 @@ const handleFieldChange = (field: string, value: any) => {
     try {
       setIsLoading(true);
       const endpoint = editingQuestion?._id
-        ? `https://lms-smartcliff.vercel.app/update/question-bank/${editingQuestion._id}`
-        : 'https://lms-smartcliff.vercel.app/create/question-bank';
+        ? `https://lms-server-1-v648.onrender.com/update/question-bank/${editingQuestion._id}`
+        : 'https://lms-server-1-v648.onrender.com/create/question-bank';
 
       const response = await fetch(endpoint, {
         method: editingQuestion?._id ? 'PUT' : 'POST',

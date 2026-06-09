@@ -189,7 +189,7 @@ export default function ExerciseGradeDashboard() {
       if (subcategory) params.append('subcategory', subcategory || '')
       
       const response = await fetch(
-        `https://lms-smartcliff.vercel.app/analytics/exercise/${exerciseId}?${params.toString()}`,
+        `https://lms-server-1-v648.onrender.com/analytics/exercise/${exerciseId}?${params.toString()}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

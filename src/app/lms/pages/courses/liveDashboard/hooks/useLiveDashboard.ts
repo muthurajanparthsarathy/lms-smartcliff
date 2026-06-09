@@ -7,7 +7,7 @@ import type {
   DashboardStudentJoined,
 } from "../types/liveDashboard.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-smartcliff.vercel.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
 
 interface UseLiveDashboardArgs {
   assessmentId: string;

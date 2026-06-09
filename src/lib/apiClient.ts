@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-export const API_BASE_URL = "https://lms-smartcliff.vercel.app";
+export const API_BASE_URL = "https://lms-server-1-v648.onrender.com";
 
 export interface ApiError extends Error {
   status?: number;

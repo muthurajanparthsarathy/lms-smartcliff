@@ -68,10 +68,20 @@ export function normalizeSecurityConfig(raw: Record<string, any> = {}): Assessme
   // `screenRecordingEnabled`  (old field) = system records student's screen for proctoring
   // `preventScreenRecording`  (new field) = block STUDENT from taking their own recordings
   // These are two distinct concerns; do NOT conflate them.
+  //
+  // Default OFF: the current security-settings UI for You_Do assessments no
+  // longer emits `screenRecordingEnabled` (only `preventScreenRecording` is
+  // surfaced), so a missing field means "the teacher didn't ask for proctor
+  // recording" — NOT "assume it's on". The previous default of `true` caused
+  // every student test (MCQ / Programming / DB / Section-based) to show the
+  // browser's screen-share prompt even when the teacher had switched all
+  // security flags off. Teachers who DO want proctor recording can still
+  // turn it on explicitly via `screenRecordingEnabled: true` on the
+  // securitySettings document.
   const proctoringRecordingEnabled: boolean =
     raw.screenRecordingEnabled !== undefined
       ? Boolean(raw.screenRecordingEnabled)
-      : true; // default ON for You_Do assessments
+      : false;
 
   return {
     // ── Student-restriction flags ──────────────────────────────────────────

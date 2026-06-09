@@ -1975,7 +1975,7 @@ notifyStudentChannels: { dashboard: true, gmail: false, whatsapp: false },
 
       // FIXED: declare these BEFORE the if/else so both branches can access them
       const entityPath = getEntityType(nodeType);
-      const BASE_URL = 'https://lms-smartcliff.vercel.app';
+      const BASE_URL = 'https://lms-server-1-v648.onrender.com';
       const token = localStorage.getItem('smartcliff_token');
 
       if (!token) throw new Error('No authentication token found. Please log in again.');
@@ -2238,7 +2238,7 @@ notifyStudentChannels: { dashboard: true, gmail: false, whatsapp: false },
 
       // FIXED: declare before if/else
       const entityPath = getEntityType(nodeType);
-      const BASE_URL = 'https://lms-smartcliff.vercel.app';
+      const BASE_URL = 'https://lms-server-1-v648.onrender.com';
       const token = localStorage.getItem('smartcliff_token');
 
       if (!token) throw new Error('No authentication token found. Please log in again.');

@@ -1818,7 +1818,7 @@ const handleStartClick = (exercise: Exercise, e: React.MouseEvent) => {
                     // Assessment Name is the only flexible column (no fixed
                     // width); the +50px we added to Action below comes out of
                     // here automatically thanks to `table-fixed`.
-                    { label: 'Assessment Name', cls: 'px-3' },
+                    { label: 'Assesssment Name', cls: 'px-3' },
                     { label: 'Start Date',      cls: 'w-[150px] pl-0 pr-2' },
                     { label: 'End Date',        cls: 'w-[150px] pl-0 pr-2' },
                     { label: 'Level',           cls: 'w-[100px] pl-0 pr-2' },
@@ -1930,9 +1930,22 @@ const handleStartClick = (exercise: Exercise, e: React.MouseEvent) => {
                         </span>
                       </td>
 
-                      {/* Status — Active / Inactive */}
+                      {/* Status — Active / Inactive. Hover to see WHY: the
+                          underlying availability function already computes a
+                          human reason ("Starts Jun 10…", "Expired Jun 8…",
+                          "Ends Jun 15…", etc.) — surfacing it as a tooltip
+                          turns "Inactive" from a black box into a usable
+                          diagnostic when a teacher updates schedule dates
+                          and is checking why the Start button hasn't
+                          appeared yet. */}
                       <td className="pl-0 pr-2 py-3 align-middle text-center">
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+                        <span
+                          className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border cursor-help"
+                          title={
+                            !exercise.availabilityPeriod?.startDate && !exercise.availabilityPeriod?.endDate
+                              ? 'No schedule saved yet — open Settings → Schedule and click Save.'
+                              : availability.message || (availability.canStart ? 'Open' : 'Not open')
+                          }
                           style={availability.canStart
                             ? { background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }
                             : { background: '#f1f5f9', color: '#64748b', borderColor: '#e2e8f0' }}>

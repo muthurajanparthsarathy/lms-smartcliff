@@ -1343,7 +1343,7 @@ const refreshContentData = useCallback(async (node: CourseNode, backendData?: an
     setIsContentLoading(true);
 
     try {
-      const BASE_URL = "https://lms-smartcliff.vercel.app";
+      const BASE_URL = "https://lms-server-1-v648.onrender.com";
       const token = typeof window !== "undefined" ? localStorage.getItem("smartcliff_token") : null;
 
       const courseRes = await fetch(`${BASE_URL}/getAll/courses-data/${courseId}`, {
@@ -1431,7 +1431,7 @@ const refreshContentData = useCallback(async (node: CourseNode, backendData?: an
     setIsContentLoading(true);
 
     try {
-      const BASE_URL = "https://lms-smartcliff.vercel.app";
+      const BASE_URL = "https://lms-server-1-v648.onrender.com";
       const token = typeof window !== "undefined" ? localStorage.getItem("smartcliff_token") : null;
 
       const courseRes = await fetch(`${BASE_URL}/getAll/courses-data/${courseId}`, {
@@ -5519,7 +5519,7 @@ const handleNavigateToFolderLevel = useCallback(async (folderName: string, index
     tabType={activeTab || ""} 
     subcategory={activeSubcategory || ""} 
     folderPath={getCurrentNavState().currentFolderPath} 
-    apiBaseUrl="https://lms-smartcliff.vercel.app" 
+    apiBaseUrl="https://lms-server-1-v648.onrender.com" 
     onClose={() => { 
       setShowPDFViewer(false); 
       setCurrentPDFUrl(""); 
@@ -5556,7 +5556,7 @@ const handleNavigateToFolderLevel = useCallback(async (folderName: string, index
     tabType={toBackendTab(activeTab)} 
     subcategory={activeSubcategory} 
     folderPath={getCurrentNavState().currentFolderPath} 
-    apiBaseUrl="https://lms-smartcliff.vercel.app" 
+    apiBaseUrl="https://lms-server-1-v648.onrender.com" 
     isTeacher={true}
     breadcrumbs={breadcrumbs}  // ← ADD THIS
     currentCourseName={courseStructureResponse?.data?.courseName || "Course"}  // ← ADD THIS
@@ -5616,7 +5616,7 @@ const handleNavigateToFolderLevel = useCallback(async (folderName: string, index
       setImagePlaylist([]);
       setCurrentImageIndex(0);
     }}
-    apiBaseUrl="https://lms-smartcliff.vercel.app"
+    apiBaseUrl="https://lms-server-1-v648.onrender.com"
     isTeacher={true}
     allImages={imagePlaylist}
     currentImageIndex={currentImageIndex}
@@ -5667,7 +5667,7 @@ const handleNavigateToFolderLevel = useCallback(async (folderName: string, index
             setCurrentVideoIndex(0);
             setCurrentVideoFileId("");
           }}
-          apiBaseUrl="https://lms-smartcliff.vercel.app"
+          apiBaseUrl="https://lms-server-1-v648.onrender.com"
           isTeacher={true}
         />
       )}

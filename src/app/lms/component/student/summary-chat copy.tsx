@@ -48,7 +48,7 @@ interface NavigationStep {
     label: string;
 }
 
-const BACKEND_API_URL = "https://lms-smartcliff.vercel.app";
+const BACKEND_API_URL = "https://lms-server-1-v648.onrender.com";
 
 export default function SummaryChat({ isOpen, onClose, context }: SummaryChatProps) {
     const [messages, setMessages] = useState<Message[]>([])

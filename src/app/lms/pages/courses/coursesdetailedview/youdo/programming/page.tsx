@@ -56,7 +56,7 @@ const ProgrammingPageContent = () => {
 
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-        const res = await fetch(`https://lms-smartcliff.vercel.app/exercise/${exerciseId}`, {
+        const res = await fetch(`https://lms-server-1-v648.onrender.com/exercise/${exerciseId}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
         if (res.ok) {

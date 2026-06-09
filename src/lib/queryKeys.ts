@@ -23,6 +23,11 @@ export const queryKeys = {
     viewById: (id: string) => ["pedagogy", "view", id] as const,
     viewForCourse: (courseId: string) => ["pedagogy", "view-for-course", courseId] as const,
   },
+  reviewSubmission: {
+    all: ["reviewSubmission"] as const,
+    courseData: (courseId: string) =>
+      ["reviewSubmission", "courseData", courseId] as const,
+  },
   progress: {
     all: ["progress"] as const,
     forUserCourse: (userId: string, courseId: string) =>

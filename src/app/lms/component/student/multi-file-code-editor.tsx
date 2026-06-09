@@ -261,7 +261,7 @@ export default function MultiFileCodeEditor({
     setFullExercise(exercise || null)
     if (!exercise?._id) return
     const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || ''
-    fetch(`https://lms-smartcliff.vercel.app/exercise/${exercise._id}`, {
+    fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     })
       .then(r => r.ok ? r.json() : null)
@@ -435,7 +435,7 @@ export default function MultiFileCodeEditor({
     try {
       const token = localStorage.getItem("smartcliff_token") || localStorage.getItem("token") || ""
       const res = await fetch(
-        `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+        `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
       if (!res.ok) return null
@@ -620,7 +620,7 @@ export default function MultiFileCodeEditor({
       isTestSubmission,
     }
     const res = await axios.post(
-      "https://lms-smartcliff.vercel.app/courses/answers/submit-multiple-files",
+      "https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files",
       payload,
       { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } },
     )

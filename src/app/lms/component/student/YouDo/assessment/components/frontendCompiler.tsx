@@ -612,7 +612,7 @@ const FrontendCompiler: React.FC<FrontendCompilerProps> = ({
         };
 
         await axios.post(
-          'https://lms-smartcliff.vercel.app/courses/answers/submit-multiple-files',
+          'https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files',
           savePayload,
           {
             headers: {
@@ -1913,7 +1913,7 @@ console.log('Project utilities available at window.projectUtils');`,
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
 
-        await axios.post('https://lms-smartcliff.vercel.app/exercise/lock', {
+        await axios.post('https://lms-server-1-v648.onrender.com/exercise/lock', {
           courseId,
           exerciseId,
           category,
@@ -2010,7 +2010,7 @@ console.log('Project utilities available at window.projectUtils');`,
 
     try {
       const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-      await axios.post('https://lms-smartcliff.vercel.app/exercise/lock', {
+      await axios.post('https://lms-server-1-v648.onrender.com/exercise/lock', {
         courseId,
         exerciseId,
         category,
@@ -2402,7 +2402,7 @@ console.log('Project utilities available at window.projectUtils');`,
 
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-        const response = await axios.get('https://lms-smartcliff.vercel.app/exercise/status', {
+        const response = await axios.get('https://lms-server-1-v648.onrender.com/exercise/status', {
           params: { courseId, exerciseId, category, subcategory },
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -2452,7 +2452,7 @@ console.log('Project utilities available at window.projectUtils');`,
   //     }
 
   //     const response = await fetch(
-  //       `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+  //       `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
   //       {
   //         headers: {  
   //           'Authorization': `Bearer ${token}`,
@@ -3997,7 +3997,7 @@ document.addEventListener('DOMContentLoaded', init${name.charAt(0).toUpperCase()
       };
 
       const response = await axios.post(
-        'https://lms-smartcliff.vercel.app/courses/answers/submit-multiple-files',
+        'https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files',
         payload,
         {
           headers: {
@@ -4090,7 +4090,7 @@ document.addEventListener('DOMContentLoaded', init${name.charAt(0).toUpperCase()
       try {
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
         if (!token) return;
-        const res = await fetch(`https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${qid}&category=${category}`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${qid}&category=${category}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) return;
         const data = await res.json();
         const sub = data?.success ? data?.data : null;
@@ -4928,10 +4928,12 @@ document.addEventListener('DOMContentLoaded', init${name.charAt(0).toUpperCase()
         }}
       />
 
-      {/* Live Screen Monitoring — standalone frontend (parent owns it in section mode) */}
+      {/* Live Screen Monitoring — standalone frontend (parent owns it in section mode).
+          Only active when proctoring screen recording is ON: live monitoring shares the
+          same getDisplayMedia stream, so if recording is OFF we must NOT prompt for it. */}
       <ScreenShareGuard
         assessmentId={(exerciseData as any)?._id ? String((exerciseData as any)._id) : ""}
-        active={!embedded && isAssessmentMode && hasStarted}
+        active={!embedded && isAssessmentMode && hasStarted && !!activeSecurity.screenRecordingEnabled}
         courseId={courseId}
         waitForSharedStream={!!activeSecurity.screenRecordingEnabled}
       />

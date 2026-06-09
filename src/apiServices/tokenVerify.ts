@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
+const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
 
 // Define types for permission
 interface ApiPermission {

@@ -423,7 +423,7 @@ export default function PPTViewer({
         formData.append('file', blob, `presentation.${ext}`)
         formData.append('pptUrl', pptUrl)
 
-        const res = await fetch('https://lms-smartcliff.vercel.app/api/ppt/convert', {
+        const res = await fetch('https://lms-server-1-v648.onrender.com/api/ppt/convert', {
           method: 'POST',
           body: formData,
         })

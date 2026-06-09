@@ -669,6 +669,60 @@ const subcategories = useMemo(() => {
     }
   }, [courseId, courseDetailQuery.data, courseDetailQuery.error])
 
+  // ── Re-sync selectedItem.pedagogy when courseData refetches ─────────────────
+  // selectedItem.pedagogy is captured ONCE at click time (in handleItemSelect)
+  // and is what every downstream consumer reads — including the You Do
+  // assessment list and its availabilityPeriod (start/end dates). When a
+  // teacher edits an exercise's Schedule via the settings modal, the modal
+  // calls refreshCourseData → React Query refetches → courseData updates with
+  // the new availabilityPeriod. Without this effect, selectedItem.pedagogy
+  // would stay frozen on the old snapshot, so the assessment row would keep
+  // rendering the previous Start/End dates (and the "Inactive" badge derived
+  // from them) until the user manually clicked the tree node again.
+  useEffect(() => {
+    if (!selectedItem?.id || !courseData?.modules) return
+    const findPedagogy = (modules: any[]): any | null => {
+      for (const m of modules) {
+        if (m._id === selectedItem.id) return m.pedagogy
+        if (Array.isArray(m.subModules)) {
+          for (const sub of m.subModules) {
+            if (sub._id === selectedItem.id) return sub.pedagogy
+            if (Array.isArray(sub.topics)) {
+              for (const t of sub.topics) {
+                if (t._id === selectedItem.id) return t.pedagogy
+                if (Array.isArray(t.subTopics)) {
+                  for (const st of t.subTopics) {
+                    if (st._id === selectedItem.id) return st.pedagogy
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (Array.isArray(m.topics)) {
+          for (const t of m.topics) {
+            if (t._id === selectedItem.id) return t.pedagogy
+            if (Array.isArray(t.subTopics)) {
+              for (const st of t.subTopics) {
+                if (st._id === selectedItem.id) return st.pedagogy
+              }
+            }
+          }
+        }
+      }
+      return null
+    }
+    const fresh = findPedagogy(courseData.modules as any)
+    if (!fresh) return
+    setSelectedItem(prev => {
+      // Reference compare avoids a no-op render on every courseData tick — the
+      // refetched object will be a different reference whenever the server
+      // payload actually changed.
+      if (!prev || prev.pedagogy === fresh) return prev
+      return { ...prev, pedagogy: fresh }
+    })
+  }, [courseData, selectedItem?.id])
+
   const getStudentAnswers = useCallback((): Record<string, any> | undefined => {
     if (!courseData?.singleParticipants || !Array.isArray(courseData.singleParticipants)) return undefined
     let currentUserId: string | undefined
@@ -1252,7 +1306,7 @@ const getExercisesForActivity = (): any[] => {
         setExerciseResetProgress(options?.resetProgress ?? false)
         try {
           const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || ''
-          const res = await fetch(`https://lms-smartcliff.vercel.app/exercise/${exercise._id}`, {
+          const res = await fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
           })
           if (res.ok) {

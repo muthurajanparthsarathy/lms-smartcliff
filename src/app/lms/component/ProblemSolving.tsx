@@ -1719,7 +1719,7 @@ const ProblemSolving: React.FC<ProblemSolvingProps> = (props) => {
       const ids = exerciseList.map(e => e._id).join(',');
       const params = new URLSearchParams({ courseId, tabType: activeTab, subcategory, exerciseIds: ids });
       const resp = await fetch(
-        `https://lms-smartcliff.vercel.app/analytics/exercise-submission-status?${params}`,
+        `https://lms-server-1-v648.onrender.com/analytics/exercise-submission-status?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!resp.ok) return;

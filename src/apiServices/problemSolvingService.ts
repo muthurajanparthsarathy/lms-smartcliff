@@ -63,7 +63,7 @@ export interface SingleQuestionResponse {
 }
 
 // API service functions
-const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
+const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {

@@ -74,7 +74,7 @@ export default function CourseParticipantsPage() {
         setLoading(true)
         setError(null)
 
-        const url = `https://lms-smartcliff.vercel.app/getAll/courses-data/${courseId}`
+        const url = `https://lms-server-1-v648.onrender.com/getAll/courses-data/${courseId}`
         const response = await fetch(url)
 
         if (!response.ok) {

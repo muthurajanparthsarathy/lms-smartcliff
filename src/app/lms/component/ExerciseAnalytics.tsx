@@ -301,7 +301,7 @@ export default function ExerciseAnalytics() {
   const fetchCourseData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`https://lms-smartcliff.vercel.app/getAll/courses-data/${courseId}`);
+      const response = await fetch(`https://lms-server-1-v648.onrender.com/getAll/courses-data/${courseId}`);
       const result = await response.json();
 
       if (result.success && result.data) {

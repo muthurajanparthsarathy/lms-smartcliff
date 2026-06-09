@@ -53,7 +53,7 @@ const MCQPageContent = () => {
         console.log("Fetching exercise data for ID:", finalExerciseId);
 
         // Fetch exercise data from API
-        const response = await fetch(`https://lms-smartcliff.vercel.app/exercise/${finalExerciseId}`, {
+        const response = await fetch(`https://lms-server-1-v648.onrender.com/exercise/${finalExerciseId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

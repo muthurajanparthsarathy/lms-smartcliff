@@ -1,7 +1,7 @@
 // addModule.ts - API service for creating modules and fetching module data
 import axios from 'axios';
 
-const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
+const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
 
 // Configure axios instance
 const apiClient = axios.create({

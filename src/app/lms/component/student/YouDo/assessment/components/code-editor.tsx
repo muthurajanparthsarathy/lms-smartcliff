@@ -266,6 +266,16 @@ interface SecuritySettings {
     maxTabSwitches?: number;
     disableClipboard?: boolean;
     screenRecordingEnabled?: boolean;
+    // Extra flags surfaced in the SecurityAgreementModal bullet list. Same
+    // names as the normalised config (see normalizeSecurityConfig in
+    // ./useAssessmentSecurity); we forward them through the modal's prop
+    // instead of reading the parent's closure (`_normSecurity`), which was
+    // throwing ReferenceError once the modal was extracted into its own
+    // component.
+    preventRightClick?: boolean;
+    preventDevTools?: boolean;
+    preventBackNavigation?: boolean;
+    preventBrowserClose?: boolean;
 }
 
 // In your CodeEditor component, update the interface
@@ -492,25 +502,25 @@ const SecurityAgreementModal = ({
                                     <span>Copy / Paste Disabled</span>
                                 </li>
                             ) : null}
-                            {_normSecurity.preventRightClick ? (
+                            {securitySettings.preventRightClick ? (
                                 <li className="flex items-center gap-2 text-orange-700">
                                     <AlertTriangle className="w-3 h-3 text-orange-500" />
                                     <span>Right-click Disabled</span>
                                 </li>
                             ) : null}
-                            {_normSecurity.preventDevTools ? (
+                            {securitySettings.preventDevTools ? (
                                 <li className="flex items-center gap-2 text-red-700">
                                     <Shield className="w-3 h-3 text-red-500" />
                                     <span>Developer Tools Blocked</span>
                                 </li>
                             ) : null}
-                            {_normSecurity.preventBackNavigation ? (
+                            {securitySettings.preventBackNavigation ? (
                                 <li className="flex items-center gap-2 text-yellow-700">
                                     <Lock className="w-3 h-3 text-yellow-500" />
                                     <span>Back Navigation Locked</span>
                                 </li>
                             ) : null}
-                            {_normSecurity.preventBrowserClose ? (
+                            {securitySettings.preventBrowserClose ? (
                                 <li className="flex items-center gap-2 text-yellow-700">
                                     <AlertTriangle className="w-3 h-3 text-yellow-500" />
                                     <span>Browser Close Warning Enabled</span>
@@ -921,7 +931,7 @@ export default function CodeEditor({
         if (!exercise?._id) return;
         // Always re-fetch so totalMarks / totalMarksProgramming are complete
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-        fetch(`https://lms-smartcliff.vercel.app/exercise/${exercise._id}`, {
+        fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         })
             .then(r => r.ok ? r.json() : null)
@@ -952,6 +962,13 @@ export default function CodeEditor({
         maxTabSwitches:        _normSecurity.maxTabSwitches,
         disableClipboard:      _normSecurity.disableClipboard,
         screenRecordingEnabled: _normSecurity.screenRecordingEnabled,
+        // Forwarded so SecurityAgreementModal can render the extra bullets
+        // without reaching into this component's closure (which crashed with
+        // `_normSecurity is not defined` after the modal was extracted).
+        preventRightClick:     _normSecurity.preventRightClick,
+        preventDevTools:       _normSecurity.preventDevTools,
+        preventBackNavigation: _normSecurity.preventBackNavigation,
+        preventBrowserClose:   _normSecurity.preventBrowserClose,
     };
 
     // Extra security features not handled by the legacy code — use the hook
@@ -1408,7 +1425,7 @@ function solve() {
                 subcategory: subcategory || ""
             });
 
-            const response = await fetch(`https://lms-smartcliff.vercel.app/courses/answers/single?${params.toString()}`, {
+            const response = await fetch(`https://lms-server-1-v648.onrender.com/courses/answers/single?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -1461,39 +1478,34 @@ function solve() {
 
 
     useEffect(() => {
+        // ── Fullscreen state sync + ESC handling ───────────────────────────
+        // This effect used to do three things on fullscreen-exit:
+        //   1. Sync local state (kept).
+        //   2. Pop up ExitConfirmationModal (REMOVED — auto-prompting on a
+        //      passive event was a UX trap; the toolbar "Exit" button still
+        //      uses the modal for the explicit-intent case).
+        //   3. Auto re-enter fullscreen (moved into the dedicated effect
+        //      below, which is correctly gated on securitySettings.fullScreenMode).
+        // ESC suppression now also respects the security setting — if the
+        // teacher didn't require fullscreen, ESC must work normally.
         const handleFullscreenChange = () => {
             const isFullscreen = !!document.fullscreenElement;
             setIsFullscreen(isFullscreen);
             setIsInFullscreenMode(isFullscreen);
-
-            if (isAssessmentMode && hasStarted && !isFullscreen && !showExitConfirmation) {
-                // User exited fullscreen without confirmation - show confirmation modal
-                setPendingExitAction(() => () => {
-                    // Exit assessment and return to exercises
-                    handleCancelAssessment();
-                });
-                setShowExitConfirmation(true);
-
-                // Try to re-enter fullscreen while showing modal
-                setTimeout(() => {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(() => { });
-                    }
-                }, 100);
-            }
         }
 
-        // Also handle ESC key press
+        // Swallow ESC ONLY when fullscreen is genuinely required AND the
+        // assessment is live. Otherwise let the browser handle it.
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (isAssessmentMode && hasStarted && e.key === 'Escape' && document.fullscreenElement) {
+            if (
+                isAssessmentMode &&
+                hasStarted &&
+                securitySettings.fullScreenMode &&
+                e.key === 'Escape' &&
+                document.fullscreenElement
+            ) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                setPendingExitAction(() => () => {
-                    document.exitFullscreen().catch(() => { });
-                    handleCancelAssessment();
-                });
-                setShowExitConfirmation(true);
             }
         }
 
@@ -1504,7 +1516,7 @@ function solve() {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('keydown', handleKeyDown, true);
         }
-    }, [isAssessmentMode, hasStarted, showExitConfirmation]);
+    }, [isAssessmentMode, hasStarted, securitySettings.fullScreenMode]);
 
     // Add a function to handle assessment cancellation
     const handleCancelAssessment = () => {
@@ -1567,7 +1579,15 @@ function solve() {
         });
     }, [exercise, category, isAssessmentMode, hasStarted]);
     // --- Security Effects ---
+    // Fullscreen enforcement: only run when the teacher actually required it.
+    // Previously this effect attached its listener unconditionally and warned
+    // the student "Fullscreen Required" + auto re-entered fullscreen even when
+    // the assessment's security settings had `fullScreenMode: false`. Gate the
+    // whole thing on the setting so disabled = no listener, no toast, no
+    // re-entry.
     useEffect(() => {
+        if (!securitySettings.fullScreenMode) return;
+
         const handleFullscreenChange = () => {
             const isFullscreen = !!document.fullscreenElement;
             setIsFullscreen(isFullscreen);
@@ -1588,42 +1608,18 @@ function solve() {
 
         document.addEventListener('fullscreenchange', handleFullscreenChange)
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-    }, [isAssessmentMode, hasStarted])
+    }, [isAssessmentMode, hasStarted, securitySettings.fullScreenMode])
 
     // --- Tab Switch Detection ---
-    // Update the tab switch detection useEffect around line ~920
-    useEffect(() => {
-        if (!isAssessmentMode || !hasStarted) return;
-
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                setTabSwitchCount(prev => {
-                    const newCount = prev + 1;
-                    const maxSwitches = securitySettings.maxTabSwitches || 3; // Use security setting or default to 3
-
-                    // Show toast with formatted count (e.g., "1/3")
-                    showToast({
-                        type: 'warning',
-                        title: 'Tab Switch Detected',
-                        message: `Tab switch ${newCount}/${maxSwitches}`,
-                        duration: 3000
-                    });
-
-                    if (newCount >= maxSwitches) {
-                        handleTermination("Maximum tab switches exceeded", 'terminated');
-                    }
-
-                    return newCount;
-                });
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, [isAssessmentMode, hasStarted, securitySettings.maxTabSwitches]);
+    // Removed: this useEffect ran a SECOND visibilitychange listener that
+    // ignored `securitySettings.preventTabSwitch` / `tabSwitchAllowed`, so
+    // every assessment terminated after the default 3 switches even when
+    // the teacher had explicitly allowed tab switching. The same enforcement
+    // already lives in `useAssessmentSecurity` (gated correctly on
+    // `config.preventTabSwitch`) — the local count + toast UX is now driven
+    // by that hook's `onTabSwitchViolation` callback below. Keeping both
+    // also risked a duplicate `handleTermination` call (and a double submit)
+    // on the legitimate restricted-mode path.
 
     // --- Timer Implementation ---
     // --- Timer Implementation ---
@@ -2148,7 +2144,7 @@ function solve() {
             // Save recording URL to backend
             try {
                 const token = localStorage.getItem('smartcliff_token') || '';
-                const saveResponse = await fetch('https://lms-smartcliff.vercel.app/assessment/recording', {
+                const saveResponse = await fetch('https://lms-server-1-v648.onrender.com/assessment/recording', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2236,20 +2232,27 @@ function solve() {
 
         setHasStarted(true);
 
-        // Force fullscreen immediately
-        try {
-            await document.documentElement.requestFullscreen();
-            setIsFullscreen(true);
-            setIsInFullscreenMode(true);
-        } catch (error) {
-            console.error('Fullscreen error:', error);
-            showToast({
-                type: 'error',
-                title: 'Fullscreen Required',
-                message: 'Assessment cannot start without fullscreen. Please enable it manually.',
-                duration: 5000
-            });
-            return; // Don't proceed if fullscreen fails
+        // Enter fullscreen ONLY if the teacher required it. Previously this
+        // ran unconditionally and refused to start the assessment when the
+        // request failed — which meant a student whose teacher had switched
+        // "Require Fullscreen Mode" OFF still got prompted (and blocked if
+        // they declined). Now: skip the request entirely when not required,
+        // and treat a failed request as a warning rather than a hard stop.
+        if (securitySettings.fullScreenMode) {
+            try {
+                await document.documentElement.requestFullscreen();
+                setIsFullscreen(true);
+                setIsInFullscreenMode(true);
+            } catch (error) {
+                console.error('Fullscreen error:', error);
+                showToast({
+                    type: 'error',
+                    title: 'Fullscreen Required',
+                    message: 'Assessment cannot start without fullscreen. Please enable it manually.',
+                    duration: 5000
+                });
+                return; // Don't proceed if fullscreen fails AND was required
+            }
         }
 
         // Start recording ONLY if enabled
@@ -2337,7 +2340,7 @@ function solve() {
                 formData.append('screenRecording', screenRecordingBlob, filename);
             }
 
-            await fetch('https://lms-smartcliff.vercel.app/exercise/lock', {
+            await fetch('https://lms-server-1-v648.onrender.com/exercise/lock', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -2641,7 +2644,7 @@ function solve() {
                 || localStorage.getItem('token')
                 || '';
 
-            const response = await fetch('https://lms-smartcliff.vercel.app/courses/answers/submit', {
+            const response = await fetch('https://lms-server-1-v648.onrender.com/courses/answers/submit', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
@@ -3157,7 +3160,7 @@ function solve() {
 
             try {
                 const token = localStorage.getItem('smartcliff_token') || '';
-                const response = await fetch(`https://lms-smartcliff.vercel.app/exercise/status?courseId=${courseId}&exerciseId=${exercise._id}&category=You_Do&subcategory=${subcategory}`, {
+                const response = await fetch(`https://lms-server-1-v648.onrender.com/exercise/status?courseId=${courseId}&exerciseId=${exercise._id}&category=You_Do&subcategory=${subcategory}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -3165,11 +3168,28 @@ function solve() {
                     const data = await response.json();
                     if (data.success) {
                         const { isLocked, status } = data.data;
-                        if (isLocked || status === 'terminated' || status === 'completed') {
+
+                        // Already submitted → bounce back to the assessment list
+                        // (course detailed view). Do NOT show the terminated screen
+                        // or start the security/test flow — the attempt is done.
+                        if (status === 'completed') {
+                            setShowSecurityAgreement(false);
+                            setIsAssessmentMode(false);
+                            setHasStarted(false);
+                            toast.info('You have already submitted this assessment.');
+                            if (onCloseExercise) onCloseExercise();
+                            else if (onBack) onBack();
+                            else router.back();
+                            return;
+                        }
+
+                        // Genuine termination (proctor lock or auto-submit violation)
+                        // → show the Access Terminated screen.
+                        if (isLocked || status === 'terminated') {
                             setIsLocked(true);
                             setIsTerminated(true);
                             setHasStarted(false);
-                            setTerminationReason(status === 'completed' ? "Assessment Completed." : "Access Terminated.");
+                            setTerminationReason("Access Terminated.");
                         }
                     }
                 }
@@ -3235,10 +3255,12 @@ function solve() {
             className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} border-gray-300 flex flex-col border ${isFullscreen ? 'rounded-none' : 'rounded-lg relative h-full min-h-0 flex-1'}`}
             style={{ fontFamily: FONT, ...(isFullscreen ? { position: 'fixed', inset: 0, width: '100vw', height: '100vh', zIndex: 2147483647, overflow: 'hidden' } : {}) }}
         >
-            {/* Live Screen Monitoring — standalone code editor (parent owns it in section mode) */}
+            {/* Live Screen Monitoring — standalone code editor (parent owns it in section mode).
+                Only active when proctoring screen recording is ON: live monitoring shares the
+                same getDisplayMedia stream, so if recording is OFF we must NOT prompt for it. */}
             <ScreenShareGuard
                 assessmentId={exercise?._id ? String(exercise._id) : ""}
-                active={!embedded && isAssessmentMode && hasStarted}
+                active={!embedded && isAssessmentMode && hasStarted && !!securitySettings.screenRecordingEnabled}
                 courseId={courseId}
                 waitForSharedStream={!!(securitySettings as any)?.screenRecordingEnabled}
             />
@@ -3289,8 +3311,16 @@ function solve() {
                 onCancel={() => {
                     setShowExitConfirmation(false);
                     setPendingExitAction(null);
-                    // Force back to fullscreen
-                    if (isAssessmentMode && hasStarted && !document.fullscreenElement) {
+                    // Force back to fullscreen — but only when the teacher
+                    // actually required fullscreen mode. If they didn't, the
+                    // student dismissing the Exit dialog shouldn't suddenly
+                    // get yanked into fullscreen.
+                    if (
+                        isAssessmentMode &&
+                        hasStarted &&
+                        securitySettings.fullScreenMode &&
+                        !document.fullscreenElement
+                    ) {
                         document.documentElement.requestFullscreen().catch(() => { });
                     }
                 }}

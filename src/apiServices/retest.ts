@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://lms-smartcliff.vercel.app';
+const BASE_URL = 'https://lms-server-1-v648.onrender.com';
 
 const getToken = (): string | null =>
   typeof window !== 'undefined' ? localStorage.getItem('smartcliff_token') : null;

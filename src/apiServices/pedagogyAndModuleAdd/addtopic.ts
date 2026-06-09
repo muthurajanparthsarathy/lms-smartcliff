@@ -1,7 +1,7 @@
 // topicService.ts - React Query version
 import axios from 'axios';
 
-const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
+const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
 
 // Type definitions
 interface Topic {

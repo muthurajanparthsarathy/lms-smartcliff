@@ -81,7 +81,7 @@ const showWarningToast = (message: string) => {
 const fetchCourseParticipants = async (courseId: string, institutionId: string, token: string) => {
   try {
     const response = await fetch(
-      `https://lms-smartcliff.vercel.app/getAll/courses-data/${courseId}`,
+      `https://lms-server-1-v648.onrender.com/getAll/courses-data/${courseId}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,

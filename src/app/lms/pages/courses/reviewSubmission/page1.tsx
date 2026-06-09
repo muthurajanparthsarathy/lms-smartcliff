@@ -94,7 +94,7 @@ const inter = Inter({ subsets: ['latin'] });
 const montserrat = Montserrat({ subsets: ['latin'] });
 
 // API CONFIG
-const BACKEND_API_URL = "https://lms-smartcliff.vercel.app";
+const BACKEND_API_URL = "https://lms-server-1-v648.onrender.com";
 const PISTON_API_URL = "https://emkc.org/api/v2/piston/execute";
 
 // --- INTERFACES ---

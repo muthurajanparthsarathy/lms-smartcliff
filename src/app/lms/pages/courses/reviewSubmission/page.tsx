@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import Script from 'next/script';
-import { Inter, Montserrat } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -91,10 +93,9 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
 
 // Font Configuration
 const inter = Inter({ subsets: ['latin'] });
-const montserrat = Montserrat({ subsets: ['latin'] });
 
 // API CONFIG
-const BACKEND_API_URL = "https://lms-smartcliff.vercel.app";
+const BACKEND_API_URL = "https://lms-server-1-v648.onrender.com";
 const PISTON_API_URL = "https://emkc.org/api/v2/piston/execute";
 
 // --- INTERFACES ---
@@ -661,7 +662,7 @@ const ScoreIndicator = ({ score, maxScore }: { score: number; maxScore: number }
       <div className="relative w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div className={`h-full absolute left-0 transition-all duration-500 ${percentage >= 80 ? 'bg-emerald-500' : percentage >= 60 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min(100, percentage)}%` }} />
       </div>
-      <span className={`text-[11px] font-semibold text-slate-600 ${montserrat.className}`}>
+      <span className={`text-[11px] font-semibold text-slate-600 ${inter.className}`}>
         {score} / {maxScore}
       </span>
     </div>
@@ -688,7 +689,7 @@ const InteractiveTerminal = ({ isOpen, onClose, logs, isWaitingForInput, onInput
         <div className="flex items-center gap-2.5">
           <Terminal className="w-4 h-4 text-emerald-500" />
           <div>
-            <span className={`text-xs font-bold text-slate-200 block ${montserrat.className}`}>Console Output</span>
+            <span className={`text-xs font-bold text-slate-200 block ${inter.className}`}>Console Output</span>
             <span className="text-[10px] text-slate-500 font-mono uppercase">{language} • {isRunning ? 'Running' : 'Idle'}</span>
           </div>
         </div>
@@ -723,12 +724,10 @@ const InteractiveTerminal = ({ isOpen, onClose, logs, isWaitingForInput, onInput
 const OthersReviewPanel = ({
   question,
   submission,
-  montserrat,
   inter,
 }: {
   question: ExerciseQuestion;
   submission: SubmissionQuestion | null;
-  montserrat: any;
   inter: any;
 }) => {
   const [textContent, setTextContent] = useState<string | null>(null);
@@ -781,7 +780,7 @@ const OthersReviewPanel = ({
     return (
       <div key={idx} className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className={`text-xs font-semibold text-slate-700 ${montserrat.className}`}>{file.name}</span>
+          <span className={`text-xs font-semibold text-slate-700 ${inter.className}`}>{file.name}</span>
           <a
             href={file.url}
             target="_blank"
@@ -893,7 +892,7 @@ const OthersReviewPanel = ({
     <div className="h-full overflow-y-auto custom-scrollbar px-6 py-5 space-y-5">
       {/* Question header — title only + View More button */}
       <div className="bg-orange-50 rounded-xl p-5 border border-orange-200">
-        <span className={`text-[9px] font-bold text-orange-500 uppercase tracking-widest mb-2 block ${montserrat.className}`}>
+        <span className={`text-[9px] font-bold text-orange-500 uppercase tracking-widest mb-2 block ${inter.className}`}>
           {othersType === 'notion' ? 'Written Response' : othersType === 'file-upload' ? 'File Upload' : 'Others'} • {question.points || question.score || 10} Mark
         </span>
         <div className="flex items-start justify-between gap-3">
@@ -903,7 +902,7 @@ const OthersReviewPanel = ({
           {hasViewMore && (
             <button
               onClick={() => setShowDetailModal(true)}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 hover:border-orange-300 ${montserrat.className}`}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 hover:border-orange-300 ${inter.className}`}
             >
               <Layers className="w-3 h-3" />
               View More
@@ -928,10 +927,10 @@ const OthersReviewPanel = ({
           <DialogHeader className="px-6 pt-5 pb-4 border-b border-slate-100 bg-slate-50">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <span className={`text-[9px] font-bold text-orange-500 uppercase tracking-widest block mb-1 ${montserrat.className}`}>
+                <span className={`text-[9px] font-bold text-orange-500 uppercase tracking-widest block mb-1 ${inter.className}`}>
                   {othersType === 'notion' ? 'Written Response' : othersType === 'file-upload' ? 'File Upload' : 'Others'} • {question.points || question.score || 10} points
                 </span>
-                <DialogTitle className={`text-sm font-bold text-slate-900 leading-snug ${montserrat.className}`}>
+                <DialogTitle className={`text-sm font-bold text-slate-900 leading-snug ${inter.className}`}>
                   {question.title || 'Question'}
                 </DialogTitle>
               </div>
@@ -948,7 +947,7 @@ const OthersReviewPanel = ({
               {/* Description + Images */}
               {hasDescription && (
                 <div>
-                  <p className={`text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 ${montserrat.className}`}>
+                  <p className={`text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 ${inter.className}`}>
                     Description
                   </p>
                   <div className="space-y-3">
@@ -1019,7 +1018,7 @@ const OthersReviewPanel = ({
               {/* Attachments */}
               {allAttachments.length > 0 && (
                 <div>
-                  <p className={`text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 ${montserrat.className}`}>
+                  <p className={`text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 ${inter.className}`}>
                     Attachments
                   </p>
                   <div className="flex flex-col gap-2">
@@ -1028,7 +1027,7 @@ const OthersReviewPanel = ({
                         className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 transition-all group no-underline">
                         <span className="text-xl shrink-0">{getAttachmentIcon(att.mimeType)}</span>
                         <span className="flex-1 text-xs font-semibold text-slate-700 group-hover:text-indigo-700 truncate">{att.name}</span>
-                        <span className={`text-[10px] font-bold text-indigo-500 uppercase tracking-wide shrink-0 ${montserrat.className}`}>Open ↗</span>
+                        <span className={`text-[10px] font-bold text-indigo-500 uppercase tracking-wide shrink-0 ${inter.className}`}>Open ↗</span>
                       </a>
                     ))}
                   </div>
@@ -1040,7 +1039,7 @@ const OthersReviewPanel = ({
 
           <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-end">
             <Button onClick={() => setShowDetailModal(false)}
-              className={`bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wide px-5 rounded-lg h-9 hover:bg-indigo-600 transition-colors ${montserrat.className}`}>
+              className={`bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wide px-5 rounded-lg h-9 hover:bg-indigo-600 transition-colors ${inter.className}`}>
               Close
             </Button>
           </div>
@@ -1049,7 +1048,7 @@ const OthersReviewPanel = ({
 
       {/* Student Response */}
       <div>
-        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 ${montserrat.className}`}>
+        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 ${inter.className}`}>
           Student Response
         </h3>
 
@@ -1543,11 +1542,8 @@ const isNonGraded = !!(
   };
 
   // --- EFFECTS ---
-  useEffect(() => {
-    if (courseId) {
-      fetchCourseData();
-    }
-  }, [courseId]);
+  // (Course data is fetched by the `useQuery` declared below — no manual
+  // useEffect needed here. The query auto-runs when `courseId` changes.)
 
   useEffect(() => {
     if (exercises.length > 0 && exerciseId) {
@@ -1695,70 +1691,115 @@ const isNonGraded = !!(
     });
   };
 
-  const fetchCourseData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${BACKEND_API_URL}/getAll/courses-data/${courseId}`);
+  // ── React Query: course-data fetch ────────────────────────────────────────
+  // Caches the heavy `/getAll/courses-data/review/:courseId` payload so that
+  // re-entering the page (e.g. from the Live Dashboard "Check Answers" menu,
+  // or after switching tabs) shows the previous data INSTANTLY while a
+  // background revalidation runs. `staleTime: 2min` covers the typical
+  // grading session — within that window the cached payload is treated as
+  // fresh, no re-fetch on remount.
+  const queryClient = useQueryClient();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        setCourseData(result.data);
-        const allExercises = collectExercisesWithMetadata(result.data);
-        setExercises(allExercises);
-
-        let targetExercise: Exercise | undefined;
-
-        if (exerciseId && allExercises.length > 0) {
-          targetExercise = allExercises.find(ex => {
-            if (ex._id === exerciseId) return true;
-            if (ex.exerciseInformation?.exerciseId === exerciseId) return true;
-            if (ex._id && ex._id.includes(exerciseId)) return true;
-            if (ex.exerciseInformation?.exerciseId && ex.exerciseInformation.exerciseId.includes(exerciseId)) return true;
-            if (ex.exerciseInformation?.exerciseName?.toLowerCase() === exerciseId.toLowerCase()) return true;
-            return false;
-          });
-        }
-
-        if (!targetExercise && allExercises.length > 0) {
-          targetExercise = allExercises[0];
-        }
-
-        if (targetExercise) {
-          setSelectedExercise(targetExercise);
-          buildBreadcrumb(targetExercise);
-
-          // Filter to only students
-          const studentParticipants = (result.data.singleParticipants || [])
-            .filter((p: Participant) => isStudent(p.user));
-
-          const sortedParticipants = studentParticipants.sort((a: any, b: any) => {
-            const aHas = getExerciseAnswersForExercise(a, targetExercise).length > 0;
-            const bHas = getExerciseAnswersForExercise(b, targetExercise).length > 0;
-            return aHas && !bHas ? -1 : !aHas && bHas ? 1 : 0;
-          });
-
-          setParticipants(sortedParticipants);
-          calculateGradingStats();
-        } else {
-          // Filter to only students
-          const studentParticipants = (result.data.singleParticipants || [])
-            .filter((p: Participant) => isStudent(p.user));
-          setParticipants(studentParticipants);
-        }
-      } else {
-        toast.error(result.message || 'Failed to load course data');
-      }
-    } catch (err: any) {
-      console.error('Failed to load course data:', err);
-      toast.error(err.message || 'Failed to load course data');
-    } finally {
-      setLoading(false);
+  const fetchCourseDataRequest = async (id: string): Promise<CourseData> => {
+    const response = await fetch(`${BACKEND_API_URL}/getAll/courses-data/review/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const result = await response.json();
+    if (!result.success || !result.data) {
+      throw new Error(result.message || 'Failed to load course data');
+    }
+    return result.data as CourseData;
+  };
+
+  const {
+    data: courseQueryData,
+    isLoading: isCourseLoading,
+    isError: isCourseError,
+    error: courseQueryError,
+  } = useQuery<CourseData, Error>({
+    queryKey: courseId ? queryKeys.reviewSubmission.courseData(courseId) : ['reviewSubmission', 'courseData', 'none'],
+    queryFn: () => fetchCourseDataRequest(courseId),
+    enabled: !!courseId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+  // Loading flag drives the full-page spinner. Once a query result exists
+  // (even if it's stale), we drop the spinner — the background refetch
+  // (`isCourseFetching`) is silent and the UI keeps showing data.
+  useEffect(() => {
+    setLoading(isCourseLoading && !courseQueryData);
+  }, [isCourseLoading, courseQueryData]);
+
+  // Surface query errors via the existing toast UX. Re-fires only when
+  // `courseQueryError.message` changes, so we don't spam on rerenders.
+  useEffect(() => {
+    if (isCourseError && courseQueryError) {
+      console.error('Failed to load course data:', courseQueryError);
+      toast.error(courseQueryError.message || 'Failed to load course data');
+    }
+  }, [isCourseError, courseQueryError]);
+
+  // Whenever fresh course data arrives (or comes back from cache), rebuild
+  // the derived state: exercises list, selected exercise, breadcrumb,
+  // sorted-participants list, grading stats. The body of this effect is the
+  // exact logic that used to live in the old imperative `fetchCourseData`.
+  useEffect(() => {
+    if (!courseQueryData) return;
+
+    setCourseData(courseQueryData);
+    const allExercises = collectExercisesWithMetadata(courseQueryData);
+    setExercises(allExercises);
+
+    let targetExercise: Exercise | undefined;
+
+    if (exerciseId && allExercises.length > 0) {
+      targetExercise = allExercises.find(ex => {
+        if (ex._id === exerciseId) return true;
+        if (ex.exerciseInformation?.exerciseId === exerciseId) return true;
+        if (ex._id && ex._id.includes(exerciseId)) return true;
+        if (ex.exerciseInformation?.exerciseId && ex.exerciseInformation.exerciseId.includes(exerciseId)) return true;
+        if (ex.exerciseInformation?.exerciseName?.toLowerCase() === exerciseId.toLowerCase()) return true;
+        return false;
+      });
+    }
+
+    if (!targetExercise && allExercises.length > 0) {
+      targetExercise = allExercises[0];
+    }
+
+    if (targetExercise) {
+      setSelectedExercise(targetExercise);
+      buildBreadcrumb(targetExercise);
+
+      const studentParticipants = (courseQueryData.singleParticipants || [])
+        .filter((p: Participant) => isStudent(p.user));
+
+      const sortedParticipants = studentParticipants.sort((a: any, b: any) => {
+        const aHas = getExerciseAnswersForExercise(a, targetExercise).length > 0;
+        const bHas = getExerciseAnswersForExercise(b, targetExercise).length > 0;
+        return aHas && !bHas ? -1 : !aHas && bHas ? 1 : 0;
+      });
+
+      setParticipants(sortedParticipants);
+      calculateGradingStats();
+    } else {
+      const studentParticipants = (courseQueryData.singleParticipants || [])
+        .filter((p: Participant) => isStudent(p.user));
+      setParticipants(studentParticipants);
+    }
+  }, [courseQueryData, exerciseId]);
+
+  // Thin invalidation helper kept under the legacy name so the rest of the
+  // file (e.g. `handleUnlockExercise`) can keep calling `fetchCourseData()`
+  // and get a server refetch via React Query without further changes.
+  const fetchCourseData = () => {
+    if (!courseId) return;
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.reviewSubmission.courseData(courseId),
+    });
   };
 
   const handleUnlockExercise = async (participantId: string, targetExerciseId: string) => {
@@ -2671,14 +2712,14 @@ builtins.input = _async_input
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center text-slate-500 p-6">
         <AlertCircle className="w-16 h-16 mb-4 text-slate-400" />
-        <h3 className={`text-xl font-bold text-slate-700 mb-3 ${montserrat.className}`}>
+        <h3 className={`text-xl font-bold text-slate-700 mb-3 ${inter.className}`}>
           Exercise Not Found
         </h3>
         <p className="mb-6 max-w-md text-center text-slate-600">
           The requested exercise could not be found.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button variant="outline" onClick={handleBack} className={`${montserrat.className}`}>
+          <Button variant="outline" onClick={handleBack} className={`${inter.className}`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back to Course
           </Button>
@@ -2687,7 +2728,7 @@ builtins.input = _async_input
               setSelectedExercise(exercises[0]);
               buildBreadcrumb(exercises[0]);
               calculateGradingStats();
-            }} className={`bg-indigo-600 hover:bg-indigo-700 ${montserrat.className}`}>
+            }} className={`bg-indigo-600 hover:bg-indigo-700 ${inter.className}`}>
               Load First Available Exercise
             </Button>
           )}
@@ -2760,7 +2801,7 @@ builtins.input = _async_input
             <div className="flex-none px-6 py-5 border-b border-slate-100 bg-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-lg font-bold text-slate-900 mb-1 ${montserrat.className}`}>
+                  <h1 className={`text-lg font-bold text-slate-900 mb-1 ${inter.className}`}>
                     Repository Review
                   </h1>
                   <div className={`flex items-center gap-3 text-xs ${inter.className}`}>
@@ -2809,19 +2850,19 @@ builtins.input = _async_input
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50/50">
-                    <TableHead className={`w-12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${montserrat.className}`}>No.</TableHead>
-                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${montserrat.className}`}>Name</TableHead>
-                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${montserrat.className}`}>Email</TableHead>
+                    <TableHead className={`w-12 px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${inter.className}`}>No.</TableHead>
+                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${inter.className}`}>Name</TableHead>
+                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${inter.className}`}>Email</TableHead>
                     {/* Submit Type / Reason only apply to You Do assessments (proctoring + auto-submit), not We Do assignments */}
                     {selectedExercise._category === 'You_Do' && (
                       <>
-                        <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${montserrat.className}`}>Submit Type</TableHead>
-                        <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${montserrat.className}`}>Reason</TableHead>
+                        <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${inter.className}`}>Submit Type</TableHead>
+                        <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${inter.className}`}>Reason</TableHead>
                       </>
                     )}
-                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${montserrat.className}`}>Status</TableHead>
-                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${montserrat.className}`}>Submitted Date</TableHead>
-                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${montserrat.className}`}>Actions</TableHead>
+                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${inter.className}`}>Status</TableHead>
+                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${inter.className}`}>Submitted Date</TableHead>
+                    <TableHead className={`px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center ${inter.className}`}>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2904,16 +2945,16 @@ builtins.input = _async_input
                     return (
                       <TableRow key={participant._id} className="border-b border-slate-50 hover:bg-slate-50/40 transition-colors group">
                         <TableCell className="px-4 py-3 text-center">
-                          <span className={`text-xs font-semibold text-slate-400 group-hover:text-indigo-500 ${montserrat.className}`}>
+                          <span className={`text-xs font-semibold text-slate-400 group-hover:text-indigo-500 ${inter.className}`}>
                             {String(index + 1).padStart(2, '0')}
                           </span>
                         </TableCell>
                         <TableCell className="px-4 py-3">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-8 h-8 bg-slate-800 flex items-center justify-center text-white text-[10px] font-bold rounded-md shadow-sm ${montserrat.className}`}>
+                            <div className={`w-8 h-8 bg-slate-800 flex items-center justify-center text-white text-[10px] font-bold rounded-md shadow-sm ${inter.className}`}>
                               {participant.user.firstName[0]}{participant.user.lastName[0]}
                             </div>
-                            <span className={`text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors ${montserrat.className}`}>
+                            <span className={`text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors ${inter.className}`}>
                               {participant.user.firstName} {participant.user.lastName}
                             </span>
                           </div>
@@ -2930,11 +2971,11 @@ builtins.input = _async_input
                             <TableCell className="px-4 py-3 text-center">
                               {hasSubmissions ? (
                                 answers[0]?.submitType === 'AUTO' ? (
-                                  <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded bg-rose-50 text-rose-600 ${montserrat.className}`}>
+                                  <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded bg-rose-50 text-rose-600 ${inter.className}`}>
                                     AUTO
                                   </Badge>
                                 ) : (
-                                  <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded bg-emerald-50 text-emerald-600 ${montserrat.className}`}>
+                                  <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded bg-emerald-50 text-emerald-600 ${inter.className}`}>
                                     USER
                                   </Badge>
                                 )
@@ -2956,11 +2997,11 @@ builtins.input = _async_input
                         )}
                         <TableCell className="px-4 py-3">
                           {hasSubmissions ? (
-                            <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded ${isEvaluated ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"} ${montserrat.className}`}>
+                            <Badge className={`font-bold text-[9px] uppercase tracking-wider py-0.5 px-2 border-none rounded ${isEvaluated ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"} ${inter.className}`}>
                               {isEvaluated ? 'Evaluated' : 'Review'}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className={`text-[9px] uppercase tracking-wider font-bold text-slate-400 bg-slate-50 border-slate-200 py-0.5 px-2 rounded ${montserrat.className}`}>
+                            <Badge variant="outline" className={`text-[9px] uppercase tracking-wider font-bold text-slate-400 bg-slate-50 border-slate-200 py-0.5 px-2 rounded ${inter.className}`}>
                               Not Submitted
                             </Badge>
                           )}
@@ -2975,7 +3016,7 @@ builtins.input = _async_input
                                 {(() => { const d = new Date(answers[0].createdAt); const h = d.getHours(); const m = String(d.getMinutes()).padStart(2,'0'); const ampm = h >= 12 ? 'PM' : 'AM'; const h12 = h % 12 || 12; return `${h12}:${m} ${ampm}`; })()}
                               </span>
                               {answers[0].lateSubmission && (
-                                <span className={`mt-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded-full ${montserrat.className}`}>
+                                <span className={`mt-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded-full ${inter.className}`}>
                                   Late Submission
                                 </span>
                               )}
@@ -2990,7 +3031,7 @@ builtins.input = _async_input
                               <Button
                                 size="sm"
                                 disabled
-                                className={`h-8 w-36 text-[10px] font-bold rounded-md shadow-sm bg-red-100 text-red-500 border border-red-200 cursor-not-allowed ${montserrat.className}`}
+                                className={`h-8 w-36 text-[10px] font-bold rounded-md shadow-sm bg-red-100 text-red-500 border border-red-200 cursor-not-allowed ${inter.className}`}
                               >
                                 Not Submitted Yet
                               </Button>
@@ -2998,7 +3039,7 @@ builtins.input = _async_input
                               <Button
                                 size="sm"
                                 onClick={() => handleStartGrading(participant)}
-                                className={`h-8 w-36 text-[10px] font-bold rounded-md transition-all shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white border-transparent ${montserrat.className}`}
+                                className={`h-8 w-36 text-[10px] font-bold rounded-md transition-all shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white border-transparent ${inter.className}`}
                               >
                                 View Details
                               </Button>
@@ -3006,7 +3047,7 @@ builtins.input = _async_input
                               <Button
                                 size="sm"
                                 onClick={() => handleStartGrading(participant)}
-                                className={`h-8 w-36 text-[10px] font-bold rounded-md transition-all shadow-sm bg-orange-500 hover:bg-orange-600 text-white border-transparent ${montserrat.className}`}
+                                className={`h-8 w-36 text-[10px] font-bold rounded-md transition-all shadow-sm bg-orange-500 hover:bg-orange-600 text-white border-transparent ${inter.className}`}
                               >
                                 Start Grading
                               </Button>
@@ -3046,77 +3087,101 @@ builtins.input = _async_input
           /* GRADING VIEW */
           <div className="h-full overflow-hidden bg-white flex flex-col">
             <div className="flex-none border-b border-slate-200 bg-white px-2 py-1">
-              <div className="flex items-center justify-between w-full bg-white px-6 py-3">
-                <div className="flex items-center">
+              <div className="grid grid-cols-3 items-center w-full bg-white px-6 py-3">
+                {/* LEFT — Back + Overall Score */}
+                <div className="flex items-center gap-4 justify-self-start">
                   <Button
                     variant="outline"
                     size="sm"
-                    // In single-student mode there's no "list" to go back to
-                    // (it's hidden). Route back to the Live Dashboard via
-                    // `handleBack` so the user lands in the context they
-                    // came from. Otherwise keep the legacy "back to list"
-                    // behavior intact.
                     onClick={() => (isSingleStudentMode ? handleBack() : setViewMode('list'))}
-                    className={`h-9 px-4 text-xs font-bold text-slate-600 border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 rounded-full group ${montserrat.className}`}
+                    className={`h-9 px-4 text-xs font-bold text-slate-600 border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 rounded-full group ${inter.className}`}
                   >
                     <ArrowLeft className="h-3.5 w-3.5 mr-2 text-slate-400 group-hover:text-rose-500 transition-colors" />
                     {isSingleStudentMode ? 'Back to Dashboard' : 'Exit Panel'}
                   </Button>
+
+                  {/* Overall Score — inline, no progress bar */}
+                  {!isNonGraded && selectedExercise && selectedParticipant && (() => {
+                    const allQuestions = selectedExercise.questions || [];
+                    const answers = getExerciseAnswersForSelectedExercise(selectedParticipant);
+                    let earned = 0;
+                    let total = 0;
+                    allQuestions.forEach(q => {
+                      const qMax = getQuestionMaxScore(selectedExercise, q);
+                      total += qMax;
+                      let sub: SubmissionQuestion | null = null;
+                      for (const ans of answers) {
+                        const s = ans.questions.find(x => x.questionId === q._id);
+                        if (s) { sub = s; break; }
+                      }
+                      if (!sub) return;
+                      if (isQuestionMCQ(q)) {
+                        if (sub.isCorrect) earned += qMax;
+                      } else {
+                        earned += typeof sub.score === 'number' ? sub.score : 0;
+                      }
+                    });
+                    const pct = total > 0 ? (earned / total) * 100 : 0;
+                    const numTone = pct >= 80 ? 'text-emerald-700' : pct >= 60 ? 'text-amber-700' : pct > 0 ? 'text-rose-700' : 'text-slate-900';
+                    return (
+                      <div className={`flex items-center gap-2.5 pl-4 border-l border-slate-300 ${inter.className}`}>
+                        <Award className="h-5 w-5 text-amber-600" />
+                        <div className="flex flex-col leading-none">
+                          <span className="text-[11px] font-bold text-slate-800 uppercase tracking-widest mb-1">
+                            Overall Score
+                          </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-extrabold tracking-tight ${numTone}`}>{earned}</span>
+                            <span className="text-base font-bold text-slate-700">/</span>
+                            <span className="text-lg font-extrabold text-slate-900">{total}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-                <div className="flex items-center space-x-6">
-                  {selectedParticipant && (
-                    <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-widest ${montserrat.className}`}>
-                          Current Student
+
+                {/* CENTER — Prev | Student Selector | Next */}
+                <div className="flex items-center gap-2 justify-self-center">
+                  <Button size="sm" onClick={handlePrevStudent} disabled={getCurrentStudentIndex() === 0} className={`h-9 px-4 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 rounded-full shadow-sm transition-all ${inter.className}`}>
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Prev
+                  </Button>
+                  <Select value={selectedParticipant?._id} onValueChange={handleStudentChange}>
+                    <SelectTrigger className={`h-9 border border-slate-200 bg-slate-50 focus:ring-0 px-3 min-w-[220px] text-xs font-bold text-slate-700 justify-between rounded-full hover:border-indigo-300 hover:bg-white transition-all ${inter.className}`}>
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
+                          <User className="h-3 w-3 text-indigo-500" />
+                        </div>
+                        <span>
+                          {selectedParticipant
+                            ? `${selectedParticipant.user.firstName} ${selectedParticipant.user.lastName}`
+                            : "Select Student"
+                          }
                         </span>
                       </div>
-                      <span className={`text-sm font-bold text-slate-800 leading-none ${montserrat.className}`}>
-                        {selectedParticipant.user.firstName} {selectedParticipant.user.lastName}
-                      </span>
-                    </div>
-                  )}
-                  <div className="h-8 w-px bg-slate-200" />
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={handlePrevStudent} disabled={getCurrentStudentIndex() === 0} className="h-8 w-8 p-0 text-slate-500 hover:bg-slate-100 rounded-full">
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <Select value={selectedParticipant?._id} onValueChange={handleStudentChange}>
-                      <SelectTrigger className={`h-9 border border-slate-200 bg-slate-50 focus:ring-0 px-3 min-w-[200px] text-xs font-bold text-slate-700 justify-between rounded-full hover:border-indigo-300 hover:bg-white transition-all ${montserrat.className}`}>
-                        <div className="flex items-center gap-2">
-                          <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
-                            <User className="h-3 w-3 text-indigo-500" />
-                          </div>
-                          <span>
-                            {selectedParticipant
-                              ? `${selectedParticipant.user.firstName} ${selectedParticipant.user.lastName}`
-                              : "Select Student"
-                            }
-                          </span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent align="end" className="max-h-[300px]">
-                        {participants.map(p => (
-                          <SelectItem key={p._id} value={p._id} className={`text-xs font-medium cursor-pointer py-2 ${montserrat.className}`}>
-                            <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                                <User className="h-3.5 w-3.5 text-slate-400" />
-                              </div>
-                              <span>{p.user.firstName} {p.user.lastName}</span>
+                    </SelectTrigger>
+                    <SelectContent align="center" className="max-h-[300px]">
+                      {participants.map(p => (
+                        <SelectItem key={p._id} value={p._id} className={`text-xs font-medium cursor-pointer py-2 ${inter.className}`}>
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                              <User className="h-3.5 w-3.5 text-slate-400" />
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="ghost" size="sm" onClick={handleNextStudent} disabled={getCurrentStudentIndex() === getTotalStudents() - 1} className="h-8 w-8 p-0 text-slate-500 hover:bg-slate-100 rounded-full">
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </div>
+                            <span>{p.user.firstName} {p.user.lastName}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={handleNextStudent} disabled={getCurrentStudentIndex() === getTotalStudents() - 1} className={`h-9 px-4 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 rounded-full shadow-sm transition-all ${inter.className}`}>
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
+
+                {/* RIGHT — spacer */}
+                <div className="justify-self-end" />
               </div>
             </div>
 
@@ -3127,15 +3192,15 @@ builtins.input = _async_input
                   <>
                     <div className="p-4 border-b border-slate-50 flex-shrink-0">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${montserrat.className}`}>
-                          Assessment Qs
+                        <h3 className={`text-xs font-bold text-slate-700 ${inter.className}`}>
+                          Assessment Questions
                         </h3>
                         <Button variant="ghost" size="sm" onClick={() => setQuestionListMinimized(true)} className="h-6 w-6 p-0 hover:bg-slate-50 rounded-md text-slate-400">
                           <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Label className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap ${montserrat.className}`}>
+                        <Label className={`text-xs font-semibold text-slate-700 whitespace-nowrap ${inter.className}`}>
                           Select Level
                         </Label>
                         <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
@@ -3183,7 +3248,7 @@ builtins.input = _async_input
                               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDot(submission)}`} />
                               <div className="flex flex-col gap-0.5 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-xs font-bold ${montserrat.className} ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{index + 1}.</span>
+                                  <span className={`text-xs font-bold ${inter.className} ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{index + 1}.</span>
                                   <span className={`px-1.5 py-0 rounded text-[9px] font-bold uppercase tracking-wide ${qIsOthers ? 'bg-orange-100 text-orange-600' : isFrontend ? 'bg-emerald-100 text-emerald-600' : qIsMCQ ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-500'}`}>
                                     {qIsOthers ? 'Others' : isFrontend ? 'Frontend' : qIsMCQ ? 'MCQ' : 'Code'}
                                   </span>
@@ -3194,7 +3259,7 @@ builtins.input = _async_input
                             <div className="flex items-center gap-2 shrink-0">
                               {qDiff && <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getDiffStyle(qDiff)}`}>{qDiff}</span>}
                               {!isNonGraded && (
-                                <span className={`text-[10px] font-bold ${submission?.score ? 'text-indigo-600' : 'text-slate-400'} ${montserrat.className}`}>
+                                <span className={`text-[10px] font-bold ${submission?.score ? 'text-indigo-600' : 'text-slate-400'} ${inter.className}`}>
                                   {submission?.score || 0} / {allowedMax}
                                 </span>
                               )}
@@ -3219,7 +3284,7 @@ builtins.input = _async_input
                       );
                       const isCurrent = selectedQuestion?._id === selectedExercise.questions[index]._id;
                       return (
-                        <div key={index} onClick={() => handleQuestionClick(selectedExercise.questions[index], index)} className={`w-8 h-8 flex items-center justify-center rounded-md text-[10px] font-bold transition-all cursor-pointer ${montserrat.className} ${isCurrent ? 'bg-indigo-600 text-white' : !hasSubmission ? 'bg-rose-50 text-rose-300 border border-rose-100' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>
+                        <div key={index} onClick={() => handleQuestionClick(selectedExercise.questions[index], index)} className={`w-8 h-8 flex items-center justify-center rounded-md text-[10px] font-bold transition-all cursor-pointer ${inter.className} ${isCurrent ? 'bg-indigo-600 text-white' : !hasSubmission ? 'bg-rose-50 text-rose-300 border border-rose-100' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>
                           {index + 1}
                         </div>
                       );
@@ -3281,22 +3346,19 @@ builtins.input = _async_input
                   <OthersReviewPanel
                     question={selectedQuestion}
                     submission={submissionQuestion}
-                    montserrat={montserrat}
                     inter={inter}
                   />
                 ) : isQuestionMCQ(selectedQuestion) ? (
                   /* MCQ QUESTION VIEW — type-aware */
                   <div className="h-full overflow-y-auto custom-scrollbar px-6 py-5 space-y-4">
                     {/* Question header */}
-                    <div className="bg-slate-950 rounded-xl p-5 border border-slate-800">
-                      <span className={`text-[9px] font-bold text-violet-400 uppercase tracking-widest mb-2 block ${montserrat.className}`}>
-                        {selectedQuestion?.mcqQuestionType?.replace(/_/g, ' ') || 'Multiple Choice'} • {maxScore} points
-                      </span>
-                      <h2 className={`text-sm font-semibold text-white leading-relaxed ${inter.className}`}>
+                    <div className="bg-slate-100 rounded-xl p-5 border border-slate-200">
+                      <h2 className={`text-sm font-semibold text-slate-900 leading-relaxed ${inter.className}`}>
+                        <span className="font-bold text-slate-700 mr-1">{currentQuestionIndex + 1}.</span>
                         {getQuestionTitle(selectedQuestion)}
                       </h2>
                       {getQuestionDescription(selectedQuestion) && (
-                        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                        <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                           {getQuestionDescription(selectedQuestion)}
                         </p>
                       )}
@@ -3304,9 +3366,18 @@ builtins.input = _async_input
 
                     {/* No submission */}
                     {!submissionQuestion?.codeAnswer && (
-                      <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border bg-slate-50 border-slate-200">
-                        <AlertCircle className="h-3.5 w-3.5 text-slate-400" />
-                        <span className="text-xs font-medium text-slate-500">Student has not answered this question</span>
+                      <div className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-amber-400 bg-amber-50 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+                        <div className="h-8 w-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                          <AlertCircle className="h-4 w-4 text-amber-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className={`text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-0.5 ${inter.className}`}>
+                            Not Answered
+                          </div>
+                          <div className="text-xs font-semibold text-amber-900">
+                            Student has not submitted an answer for this question
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -3318,14 +3389,14 @@ builtins.input = _async_input
 
                       return (
                         <div className="space-y-2">
-                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${montserrat.className}`}>
+                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${inter.className}`}>
                             Matching Pairs
                           </p>
                           {/* Column headers */}
                           <div className="grid grid-cols-3 gap-3 px-3 pb-1">
-                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${montserrat.className}`}>Left Item</span>
-                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${montserrat.className}`}>Student's Match</span>
-                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${montserrat.className}`}>Correct Match</span>
+                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${inter.className}`}>Left Item</span>
+                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${inter.className}`}>Student's Match</span>
+                            <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-wide ${inter.className}`}>Correct Match</span>
                           </div>
                           {correctPairs.map((correctPair, idx) => {
                             const studentPair = studentPairs.find(sp => sp.left === correctPair.left);
@@ -3365,13 +3436,13 @@ builtins.input = _async_input
                     {/* ── SHORT ANSWER / ESSAY ── */}
                     {(selectedQuestion?.mcqQuestionType === 'short_answer' || selectedQuestion?.mcqQuestionType === 'essay') && submissionQuestion?.codeAnswer && (
                       <div>
-                        <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${montserrat.className}`}>Student's Answer</p>
+                        <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${inter.className}`}>Student's Answer</p>
                         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                           <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{submissionQuestion.codeAnswer}</p>
                         </div>
                         {selectedQuestion.mcqQuestionType === 'short_answer' && (selectedQuestion as any).shortAnswer && (
                           <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                            <p className={`text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1 ${montserrat.className}`}>Expected Answer</p>
+                            <p className={`text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1 ${inter.className}`}>Expected Answer</p>
                             <p className="text-sm font-semibold text-emerald-800">{(selectedQuestion as any).shortAnswer}</p>
                           </div>
                         )}
@@ -3385,7 +3456,7 @@ builtins.input = _async_input
                       const isCorrect = correctVal !== null && correctVal !== undefined ? studentVal === correctVal : submissionQuestion.isCorrect;
                       return (
                         <div className="space-y-2.5">
-                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${montserrat.className}`}>Student's Answer</p>
+                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${inter.className}`}>Student's Answer</p>
                           {['true', 'false'].map(val => {
                             const isStudentChoice = submissionQuestion.codeAnswer.toLowerCase() === val;
                             const isCorrectChoice = correctVal !== null && correctVal !== undefined ? (correctVal === (val === 'true')) : (isStudentChoice && submissionQuestion.isCorrect);
@@ -3397,7 +3468,7 @@ builtins.input = _async_input
                             return (
                               <div key={val} className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 ${cls}`}>
                                 <span className="text-sm font-semibold text-slate-800 capitalize">{val}</span>
-                                {label && <span className={`text-[10px] font-bold uppercase tracking-wide ${isCorrectChoice ? 'text-emerald-600' : 'text-rose-600'} ${montserrat.className}`}>{label}</span>}
+                                {label && <span className={`text-[10px] font-bold uppercase tracking-wide ${isCorrectChoice ? 'text-emerald-600' : 'text-rose-600'} ${inter.className}`}>{label}</span>}
                               </div>
                             );
                           })}
@@ -3415,16 +3486,16 @@ builtins.input = _async_input
                         : submissionQuestion.isCorrect;
                       return (
                         <div className="space-y-2">
-                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${montserrat.className}`}>Student's Answer</p>
+                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${inter.className}`}>Student's Answer</p>
                           <div className={`flex items-center justify-between px-5 py-4 rounded-xl border-2 ${isCorrect ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
                             <span className={`text-xl font-bold ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>{submissionQuestion.codeAnswer}</span>
-                            <span className={`text-[11px] font-bold uppercase tracking-wide ${isCorrect ? 'text-emerald-600' : 'text-rose-600'} ${montserrat.className}`}>
+                            <span className={`text-[11px] font-bold uppercase tracking-wide ${isCorrect ? 'text-emerald-600' : 'text-rose-600'} ${inter.className}`}>
                               {isCorrect ? '✓ Correct' : '✗ Wrong'}
                             </span>
                           </div>
                           {correctNum !== null && correctNum !== undefined && (
                             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 border border-slate-200">
-                              <span className={`text-[10px] text-slate-500 ${montserrat.className}`}>Correct answer:</span>
+                              <span className={`text-[10px] text-slate-500 ${inter.className}`}>Correct answer:</span>
                               <span className="text-sm font-bold text-emerald-700">{correctNum}</span>
                               {tol > 0 && <span className="text-[10px] text-slate-400">± {tol}</span>}
                             </div>
@@ -3441,7 +3512,7 @@ builtins.input = _async_input
                       const sorted = [...studentOrder].sort((a, b) => a.order - b.order);
                       return (
                         <div className="space-y-2">
-                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${montserrat.className}`}>Student's Order</p>
+                          <p className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${inter.className}`}>Student's Order</p>
                           {sorted.map((item, idx) => {
                             const matchedItem = correctItems.find(ci => ci._id === item.itemId);
                             const correctItem = correctItems.find(ci => ci.order === idx + 1);
@@ -3466,7 +3537,7 @@ builtins.input = _async_input
                         <User className={`h-3.5 w-3.5 shrink-0 ${submissionQuestion.isCorrect ? 'text-emerald-600' : 'text-rose-600'}`} />
                         <span className={`text-xs font-semibold ${submissionQuestion.isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>Student answered:</span>
                         <span className={`text-xs font-bold ${submissionQuestion.isCorrect ? 'text-emerald-900' : 'text-rose-900'}`}>"{submissionQuestion.codeAnswer}"</span>
-                        <span className={`ml-auto text-[10px] font-bold uppercase tracking-wide ${submissionQuestion.isCorrect ? 'text-emerald-600' : 'text-rose-600'} ${montserrat.className}`}>
+                        <span className={`ml-auto text-[10px] font-bold uppercase tracking-wide ${submissionQuestion.isCorrect ? 'text-emerald-600' : 'text-rose-600'} ${inter.className}`}>
                           {submissionQuestion.isCorrect ? '✓ Correct' : '✗ Wrong'}
                         </span>
                       </div>
@@ -3515,7 +3586,7 @@ builtins.input = _async_input
                                 {option.imageUrl && <img src={option.imageUrl} alt="" className="h-10 w-auto rounded object-contain ml-2" />}
                               </div>
                               {labelText && (
-                                <span className={`text-[10px] uppercase tracking-wide shrink-0 ${labelCls} ${montserrat.className}`}>
+                                <span className={`text-[10px] uppercase tracking-wide shrink-0 ${labelCls} ${inter.className}`}>
                                   {labelText}
                                 </span>
                               )}
@@ -3562,11 +3633,11 @@ builtins.input = _async_input
                     {/* Toolbar */}
                     <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900 shrink-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-widest ${montserrat.className}`}>
+                        <span className={`text-[10px] font-bold text-slate-400 uppercase tracking-widest ${inter.className}`}>
                           {submissionQuestion?.language || 'Code'}
                         </span>
                         {submissionQuestion?.language && (
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-500 uppercase ${montserrat.className}`}>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-500 uppercase ${inter.className}`}>
                             {submissionQuestion.language}
                           </span>
                         )}
@@ -3577,7 +3648,7 @@ builtins.input = _async_input
                             size="sm"
                             onClick={initiateRunCode}
                             disabled={isExecuting}
-                            className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wide bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all ${montserrat.className}`}
+                            className={`h-7 px-3 text-[10px] font-bold uppercase tracking-wide bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all ${inter.className}`}
                           >
                             {isExecuting ? (
                               <><Loader2 className="w-3 h-3 mr-1.5 animate-spin" />Running...</>
@@ -3591,7 +3662,7 @@ builtins.input = _async_input
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowTerminal(false)}
-                            className={`h-7 px-3 text-[10px] font-bold text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-md ${montserrat.className}`}
+                            className={`h-7 px-3 text-[10px] font-bold text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-md ${inter.className}`}
                           >
                             <X className="w-3 h-3 mr-1.5" />Console
                           </Button>
@@ -3600,16 +3671,16 @@ builtins.input = _async_input
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowTerminal(true)}
-                            className={`h-7 px-3 text-[10px] font-bold text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-md ${montserrat.className}`}
+                            className={`h-7 px-3 text-[10px] font-bold text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-md ${inter.className}`}
                           >
                             <Terminal className="w-3 h-3 mr-1.5" />Console
                           </Button>
                         )}
                         <div className="flex items-center gap-2 ml-2 pl-2 border-l border-slate-800">
                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                          <span className={`text-[9px] font-bold text-slate-500 uppercase tracking-widest ${montserrat.className}`}>Ready</span>
+                          <span className={`text-[9px] font-bold text-slate-500 uppercase tracking-widest ${inter.className}`}>Ready</span>
                           <Separator orientation="vertical" className="h-3 bg-slate-800" />
-                          <span className={`text-[9px] font-bold text-indigo-400 uppercase tracking-widest ${montserrat.className}`}>UTF-8</span>
+                          <span className={`text-[9px] font-bold text-indigo-400 uppercase tracking-widest ${inter.className}`}>UTF-8</span>
                         </div>
                       </div>
                     </div>
@@ -3640,7 +3711,7 @@ builtins.input = _async_input
                         <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 border border-slate-800">
                           <Code className="h-6 w-6 text-slate-600" />
                         </div>
-                        <h4 className={`text-sm font-bold text-slate-400 uppercase tracking-widest mb-1 ${montserrat.className}`}>
+                        <h4 className={`text-sm font-bold text-slate-400 uppercase tracking-widest mb-1 ${inter.className}`}>
                           No Code Found
                         </h4>
                         <p className="text-xs text-slate-600 max-w-xs font-medium leading-relaxed">
@@ -3654,155 +3725,75 @@ builtins.input = _async_input
 
              {/* GRADING SIDEBAR - Only show when exercise is graded */}
 {!isNonGraded && (
-  <div className="w-72 flex flex-col bg-white">
-    <div className="p-5 h-full flex flex-col gap-6">
+  <div className="w-72 flex flex-col bg-white min-h-0 border-l border-slate-100">
+    <div className="p-5 flex-1 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-900 [&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-slate-500" style={{ scrollbarColor: '#475569 #0f172a', scrollbarWidth: 'thin' }}>
       {/* Grading Header */}
       <div>
-        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 ${montserrat.className}`}>
+        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 ${inter.className}`}>
           <Award className="h-3.5 w-3.5 text-amber-500" />
           Grading
         </h3>
 
-        {/* MCQ Question Grading */}
+        {/* Current Question Mark — MCQ (read-only) */}
         {isQuestionMCQ(selectedQuestion) && submissionQuestion && (
-          <div className={`mb-3 p-4 rounded-lg border ${submissionQuestion.isCorrect ? 'bg-emerald-50 border-emerald-200' : submissionQuestion.codeAnswer ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} ${montserrat.className}`}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                {submissionQuestion.isCorrect ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-rose-600" />}
-                <span className="text-xs font-semibold">
-                  {submissionQuestion.isCorrect ? 'Auto-graded: Correct' : submissionQuestion.codeAnswer ? 'Auto-graded: Incorrect' : 'Not answered'}
-                </span>
-              </div>
-              <div className="text-right">
-                <div className="text-lg font-bold">{submissionQuestion.isCorrect ? maxScore : 0}<span className="text-xs text-slate-500 font-normal"> / {maxScore}</span></div>
-                <div className="text-[10px] text-slate-500">{((submissionQuestion.isCorrect ? maxScore : 0) / maxScore * 100).toFixed(0)}% of total</div>
-              </div>
+          <div className={`mb-4 flex items-center justify-between py-2 ${inter.className}`}>
+            <div className="flex items-center gap-2">
+              {submissionQuestion.isCorrect
+                ? <CheckCircle className="h-5 w-5 text-emerald-600" />
+                : submissionQuestion.codeAnswer
+                  ? <XCircle className="h-5 w-5 text-rose-600" />
+                  : <Lock className="h-5 w-5 text-slate-400" />}
+              <span className="text-sm font-bold text-slate-700">Question Score</span>
             </div>
-            {submissionQuestion.codeAnswer && (
-              <div className="mt-3 pt-2 border-t border-slate-200">
-                <div className="text-[10px] text-slate-500 mb-1">Student's Answer:</div>
-                <div className="text-xs font-medium text-slate-700 bg-white p-2 rounded border border-slate-200">
-                  "{submissionQuestion.codeAnswer}"
-                </div>
-              </div>
-            )}
-            <div className="mt-3 text-[10px] text-slate-400 italic flex items-center gap-1">
-              <Lock className="h-3 w-3" />
-              MCQ scores are auto-calculated based on answer correctness
-            </div>
+            <span className={`text-xl font-extrabold tracking-tight ${submissionQuestion.isCorrect ? 'text-emerald-700' : submissionQuestion.codeAnswer ? 'text-rose-700' : 'text-slate-500'}`}>
+              {submissionQuestion.isCorrect ? maxScore : 0} <span className="text-base text-slate-400 font-bold">/ {maxScore}</span>
+            </span>
           </div>
         )}
 
-        {/* Programming/Others Question Score Input */}
-        {!isQuestionMCQ(selectedQuestion) && !isFrontendReview && !isCodeMultiFileReview && !isOthersReview && (
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between mb-2">
-                <Label className={`text-xs font-bold text-slate-700 ${montserrat.className}`}>Score Awarded</Label>
-                <span className={`text-[10px] font-semibold text-slate-500 ${montserrat.className}`}>Max: {maxScore}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="0"
-                  max={maxScore}
-                  value={score}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? 0 : parseInt(e.target.value);
-                    setScore(Math.min(maxScore, Math.max(0, val)));
-                  }}
-                  className={`h-9 bg-white border-slate-300 text-sm font-bold text-slate-900 ${montserrat.className}`}
-                />
-                <div className="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 rounded-md text-slate-400">
-                  <Award className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-2 text-center">
-                <div className="text-[10px] text-slate-500">{((score / maxScore) * 100).toFixed(0)}% of total marks</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Frontend / Code multi-file Review Score Input */}
-        {(isFrontendReview || isCodeMultiFileReview) && frontendSubmissionData && (
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between mb-2">
-                <Label className={`text-xs font-bold text-slate-700 ${montserrat.className}`}>Score Awarded</Label>
-                <span className={`text-[10px] font-semibold text-slate-500 ${montserrat.className}`}>Max: {maxScore}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="0"
-                  max={maxScore}
-                  value={score}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? 0 : parseInt(e.target.value);
-                    setScore(Math.min(maxScore, Math.max(0, val)));
-                  }}
-                  className={`h-9 bg-white border-slate-300 text-sm font-bold text-slate-900 ${montserrat.className}`}
-                />
-                <div className="h-9 w-9 flex items-center justify-center bg-white border border-slate-200 rounded-md text-slate-400">
-                  <Award className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-2 text-center">
-                <div className="text-[10px] text-slate-500">{((score / maxScore) * 100).toFixed(0)}% of total marks</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Others Review Score Input */}
-        {isOthersReview && (
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`text-[9px] font-bold text-orange-600 uppercase tracking-widest ${montserrat.className}`}>
-                {selectedQuestion?.othersQuestionType === 'notion' ? 'Written Response' : 'File Upload'} • Manual Grading
-              </span>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between mb-2">
-                <Label className={`text-xs font-bold text-slate-700 ${montserrat.className}`}>Score Awarded</Label>
-                <span className={`text-[10px] font-semibold text-slate-500 ${montserrat.className}`}>Max: {maxScore}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="0"
-                  max={maxScore}
-                  value={score}
-                  onChange={(e) => {
-                    const val = e.target.value === '' ? 0 : parseInt(e.target.value);
-                    setScore(Math.min(maxScore, Math.max(0, val)));
-                  }}
-                  className={`h-9 bg-white border-slate-300 text-sm font-bold text-slate-900 ${montserrat.className}`}
-                />
-                <div className="h-9 w-9 flex items-center justify-center bg-white border border-orange-200 rounded-md text-orange-400">
-                  <Award className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-2 text-center">
-                <div className="text-[10px] text-slate-500">{maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0}% of total marks</div>
-              </div>
+        {/* Current Question Mark — Programming / Frontend / Code / Others (editable) */}
+        {!isQuestionMCQ(selectedQuestion) && (
+          <div className={`mb-4 flex items-center justify-between gap-2 py-2 ${inter.className}`}>
+            <span className="text-sm font-bold text-slate-700 whitespace-nowrap">Question Score</span>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min="0"
+                max={maxScore}
+                value={score}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                  setScore(Math.min(maxScore, Math.max(0, val)));
+                }}
+                className={`h-10 w-20 bg-white border-2 border-slate-300 text-lg font-extrabold text-slate-900 text-center px-1 ${inter.className}`}
+              />
+              <span className="text-sm font-bold text-slate-400">/</span>
+              <span className="text-lg font-bold text-slate-400">/</span>
+              <span className="text-xl font-extrabold text-slate-700 min-w-[28px]">{maxScore}</span>
             </div>
           </div>
         )}
 
         {/* Feedback Section */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 ${montserrat.className}`}>
-            <MessageSquare className="h-3.5 w-3.5 text-indigo-500" />
-            Feedback
-          </h3>
+        <div className="flex-1 flex flex-col min-h-0 bg-indigo-50/40 border border-indigo-200 rounded-xl p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className={`text-[11px] font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-1.5 ${inter.className}`}>
+              <MessageSquare className="h-3.5 w-3.5 text-indigo-600" />
+              Feedback
+            </h3>
+            <span className={`text-[9px] font-semibold text-indigo-500 uppercase tracking-wide ${inter.className}`}>
+              Required
+            </span>
+          </div>
           <Textarea
-            placeholder="Enter your observations or corrections here..."
+            placeholder="✍ Write your feedback for the student here..."
             value={feedbackText}
             onChange={(e) => setFeedbackText(e.target.value)}
-            className="flex-1 bg-slate-50 border-slate-200 rounded-lg p-3 text-xs font-medium text-slate-700 resize-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all custom-scrollbar"
+            className="flex-1 min-h-[140px] bg-white border-2 border-indigo-200 rounded-lg p-3 text-sm font-medium text-slate-800 placeholder:text-indigo-400 placeholder:font-medium resize-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-500 transition-all custom-scrollbar shadow-inner"
           />
+          <div className={`text-[10px] text-slate-500 mt-1.5 text-right ${inter.className}`}>
+            {feedbackText.length} characters
+          </div>
         </div>
 
         {/* Save Buttons - Only for non-MCQ questions */}
@@ -3812,7 +3803,7 @@ builtins.input = _async_input
               <div className="absolute -top-3 left-0 right-0 flex justify-center animate-in slide-in-from-bottom-2 fade-in duration-300 pointer-events-none">
                 <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-emerald-100">
                   <Check className="h-3 w-3" />
-                  <span className={`text-[10px] font-bold uppercase tracking-wide ${montserrat.className}`}>Saved</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wide ${inter.className}`}>Saved</span>
                 </div>
               </div>
             )}
@@ -3824,56 +3815,76 @@ builtins.input = _async_input
                   : () => saveGrade()
                 }
                 disabled={isSaving}
-                className={`flex-1 h-10 text-[10px] font-bold uppercase tracking-wide border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 ${montserrat.className}`}
+                className={`flex-1 h-10 text-xs border-2 border-indigo-300 bg-white text-indigo-700 rounded-md hover:bg-indigo-50 hover:border-indigo-400 transition-all ${inter.className}`}
               >
-                {isSaving ? 'Saving...' : 'Save'}
+                {isSaving ? 'Saving...' : 'Submit Feedback'}
               </Button>
               <Button
-                onClick={async () => {
-                  const success = (isFrontendReview || isCodeMultiFileReview) && frontendSubmissionData
-                    ? await saveFrontendGrade(score, feedbackText)
-                    : await saveGrade();
-                  if (success) {
-                    setTimeout(() => {
-                      if (selectedExercise && currentQuestionIndex < selectedExercise.questions.length - 1) {
-                        handleQuestionClick(
-                          selectedExercise.questions[currentQuestionIndex + 1],
-                          currentQuestionIndex + 1
-                        );
-                      } else if (getCurrentStudentIndex() < getTotalStudents() - 1) {
-                        handleNextStudent();
-                      } else {
-                        toast.success('All graded!');
-                        // Single-student mode: bounce back to the Live
-                        // Dashboard. Otherwise fall back to the list view.
-                        if (isSingleStudentMode) handleBack();
-                        else setViewMode('list');
-                      }
-                    }, 800);
+                onClick={() => {
+                  if (selectedExercise && currentQuestionIndex < selectedExercise.questions.length - 1) {
+                    handleQuestionClick(
+                      selectedExercise.questions[currentQuestionIndex + 1],
+                      currentQuestionIndex + 1
+                    );
+                  } else if (getCurrentStudentIndex() < getTotalStudents() - 1) {
+                    handleNextStudent();
+                  } else {
+                    toast.success('All graded!');
+                    if (isSingleStudentMode) handleBack();
+                    else setViewMode('list');
                   }
                 }}
                 disabled={isSaving}
-                className={`flex-1 h-10 text-[10px] font-bold uppercase tracking-wide bg-slate-900 hover:bg-indigo-600 text-white rounded-md shadow-sm transition-all ${montserrat.className}`}
+                className={`flex-1 h-10 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-sm transition-all ${inter.className}`}
               >
-                {isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Saving...</> : 'Save & Next'}
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* MCQ Info Message */}
+        {/* MCQ Submit Feedback Buttons */}
         {isQuestionMCQ(selectedQuestion) && (
-          <div className="pt-4 border-t border-slate-50">
-            <div className="bg-slate-100 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-slate-500 font-medium">
-                <CheckCircle className="h-3 w-3 inline mr-1 text-emerald-500" />
-                MCQ questions are auto-graded
+          <div className="pt-4 border-t border-slate-50 relative">
+            {saveSuccess && (
+              <div className="absolute -top-3 left-0 right-0 flex justify-center animate-in slide-in-from-bottom-2 fade-in duration-300 pointer-events-none">
+                <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-emerald-100">
+                  <Check className="h-3 w-3" />
+                  <span className={`text-[10px] font-bold uppercase tracking-wide ${inter.className}`}>Saved</span>
+                </div>
               </div>
-              <div className="text-[9px] text-slate-400 mt-1">Score is automatically calculated based on answer correctness</div>
-              <div className="text-[9px] text-slate-400 mt-2 pt-1 border-t border-slate-200">
-                <MessageSquare className="h-3 w-3 inline mr-1" />
-                You can still add feedback above
-              </div>
+            )}
+            <div className="flex items-center gap-2 mb-3">
+              <Button
+                variant="outline"
+                onClick={() => saveGrade()}
+                disabled={isSaving}
+                className={`flex-1 h-10 text-xs border-2 border-indigo-300 bg-white text-indigo-700 rounded-md hover:bg-indigo-50 hover:border-indigo-400 transition-all ${inter.className}`}
+              >
+                {isSaving ? 'Saving...' : 'Submit Feedback'}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedExercise && currentQuestionIndex < selectedExercise.questions.length - 1) {
+                    handleQuestionClick(
+                      selectedExercise.questions[currentQuestionIndex + 1],
+                      currentQuestionIndex + 1
+                    );
+                  } else if (getCurrentStudentIndex() < getTotalStudents() - 1) {
+                    handleNextStudent();
+                  } else {
+                    toast.success('All graded!');
+                    if (isSingleStudentMode) handleBack();
+                    else setViewMode('list');
+                  }
+                }}
+                disabled={isSaving}
+                className={`flex-1 h-10 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-sm transition-all ${inter.className}`}
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           </div>
         )}
@@ -3892,7 +3903,7 @@ builtins.input = _async_input
           <div className="flex flex-col h-full">
             <DialogHeader className="p-6 pb-4 border-b border-slate-50">
               <div className="flex items-center justify-between">
-                <DialogTitle className={`text-lg font-bold text-slate-900 uppercase tracking-tight ${montserrat.className}`}>Question Profile</DialogTitle>
+                <DialogTitle className={`text-lg font-bold text-slate-900 uppercase tracking-tight ${inter.className}`}>Question Profile</DialogTitle>
                 <Button variant="ghost" size="sm" onClick={() => setShowQuestionModal(false)} className="rounded-full h-8 w-8 p-0"><X className="h-4 w-4" /></Button>
               </div>
             </DialogHeader>
@@ -3909,24 +3920,24 @@ builtins.input = _async_input
                           {qIsMCQ ? 'MCQ' : 'Programming'}
                         </span>
                       </div>
-                      <h2 className={`text-base font-bold text-white mb-3 leading-tight ${montserrat.className}`}>{getQuestionTitle(q)}</h2>
+                      <h2 className={`text-base font-bold text-white mb-3 leading-tight ${inter.className}`}>{getQuestionTitle(q)}</h2>
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={`bg-white text-slate-950 font-bold text-[9px] uppercase tracking-wide border-none px-2.5 py-0.5 ${montserrat.className}`}>{qMax} Points</Badge>
-                        {!qIsMCQ && q.timeLimit != null && (<Badge variant="outline" className={`border-slate-800 text-slate-400 font-bold text-[9px] uppercase tracking-wide px-2.5 py-0.5 ${montserrat.className}`}>Time: {q.timeLimit}s</Badge>)}
-                        {qIsMCQ && q.mcqQuestionDifficulty && (<Badge variant="outline" className={`border-slate-800 text-slate-400 font-bold text-[9px] uppercase tracking-wide px-2.5 py-0.5 ${montserrat.className}`}>{q.mcqQuestionDifficulty}</Badge>)}
+                        <Badge className={`bg-white text-slate-950 font-bold text-[9px] uppercase tracking-wide border-none px-2.5 py-0.5 ${inter.className}`}>{qMax} Points</Badge>
+                        {!qIsMCQ && q.timeLimit != null && (<Badge variant="outline" className={`border-slate-800 text-slate-400 font-bold text-[9px] uppercase tracking-wide px-2.5 py-0.5 ${inter.className}`}>Time: {q.timeLimit}s</Badge>)}
+                        {qIsMCQ && q.mcqQuestionDifficulty && (<Badge variant="outline" className={`border-slate-800 text-slate-400 font-bold text-[9px] uppercase tracking-wide px-2.5 py-0.5 ${inter.className}`}>{q.mcqQuestionDifficulty}</Badge>)}
                       </div>
                     </div>
 
                     {getQuestionDescription(q) && (
                       <div>
-                        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${montserrat.className}`}>{qIsMCQ ? 'Question Description' : 'Context & Requirements'}</h3>
+                        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${inter.className}`}>{qIsMCQ ? 'Question Description' : 'Context & Requirements'}</h3>
                         <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">{getQuestionDescription(q)}</p>
                       </div>
                     )}
 
                     {qIsMCQ && q.mcqQuestionOptions && q.mcqQuestionOptions.length > 0 && (
                       <div>
-                        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 ${montserrat.className}`}>Options &amp; Correct Answer</h3>
+                        <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 ${inter.className}`}>Options &amp; Correct Answer</h3>
                         <div className="space-y-2">
                           {q.mcqQuestionOptions.map((opt, idx) => {
                             const isCorrect = opt.isCorrect || (q.mcqQuestionCorrectAnswers || []).includes(opt.text);
@@ -3936,7 +3947,7 @@ builtins.input = _async_input
                                   {String.fromCharCode(65 + idx)}
                                 </span>
                                 <span className={`text-sm flex-1 ${isCorrect ? 'font-semibold text-emerald-800' : 'font-medium text-slate-700'}`}>{opt.text}</span>
-                                {isCorrect && (<span className={`text-[10px] font-bold text-emerald-600 uppercase tracking-wide ${montserrat.className}`}>✓ Correct</span>)}
+                                {isCorrect && (<span className={`text-[10px] font-bold text-emerald-600 uppercase tracking-wide ${inter.className}`}>✓ Correct</span>)}
                               </div>
                             );
                           })}
@@ -3948,13 +3959,13 @@ builtins.input = _async_input
                       <div className="grid grid-cols-2 gap-4">
                         {q.sampleInput && (
                           <div className="space-y-2">
-                            <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${montserrat.className}`}>Input Pattern</h3>
+                            <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${inter.className}`}>Input Pattern</h3>
                             <div className="bg-slate-900 p-3 rounded-lg border border-slate-800"><pre className="text-[10px] font-mono text-emerald-400 whitespace-pre-wrap">{q.sampleInput}</pre></div>
                           </div>
                         )}
                         {q.sampleOutput && (
                           <div className="space-y-2">
-                            <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${montserrat.className}`}>Expected Output</h3>
+                            <h3 className={`text-[10px] font-bold text-slate-500 uppercase tracking-widest ${inter.className}`}>Expected Output</h3>
                             <div className="bg-slate-900 p-3 rounded-lg border border-slate-800"><pre className="text-[10px] font-mono text-indigo-400 whitespace-pre-wrap">{q.sampleOutput}</pre></div>
                           </div>
                         )}
@@ -3965,7 +3976,7 @@ builtins.input = _async_input
               );
             })() : null}
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-              <Button onClick={() => setShowQuestionModal(false)} className={`bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wide px-6 rounded-md h-9 ${montserrat.className}`}>Close</Button>
+              <Button onClick={() => setShowQuestionModal(false)} className={`bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wide px-6 rounded-md h-9 ${inter.className}`}>Close</Button>
             </div>
           </div>
         </DialogContent>
@@ -3989,7 +4000,7 @@ builtins.input = _async_input
                     <Play className="h-3.5 w-3.5 text-white fill-white" />
                   </div>
                   <div>
-                    <DialogTitle className={`text-sm font-bold text-white ${montserrat.className}`}>
+                    <DialogTitle className={`text-sm font-bold text-white ${inter.className}`}>
                       Assessment Screen Recording
                     </DialogTitle>
                     {selectedParticipant && (
@@ -4068,7 +4079,7 @@ builtins.input = _async_input
                     <FileQuestion className="h-8 w-8 text-slate-600" />
                   </div>
                   <div>
-                    <h4 className={`text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ${montserrat.className}`}>
+                    <h4 className={`text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ${inter.className}`}>
                       No Recording Available
                     </h4>
                     <p className="text-sm text-slate-600 max-w-sm leading-relaxed">
@@ -4092,7 +4103,7 @@ builtins.input = _async_input
                     href={assessmentVideoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white border border-white/10 hover:bg-white/10 transition-colors ${montserrat.className}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white border border-white/10 hover:bg-white/10 transition-colors ${inter.className}`}
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -4101,7 +4112,7 @@ builtins.input = _async_input
                   </a>
                   <Button
                     onClick={() => { setShowVideoModal(false); setAssessmentVideoUrl(null); setIsLoadingVideo(false); }}
-                    className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wide px-5 rounded-md h-8 ${montserrat.className}`}
+                    className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wide px-5 rounded-md h-8 ${inter.className}`}
                   >
                     Close
                   </Button>
@@ -4113,7 +4124,7 @@ builtins.input = _async_input
                 style={{ background: 'rgba(255,255,255,0.03)' }}>
                 <Button
                   onClick={() => { setShowVideoModal(false); setAssessmentVideoUrl(null); setIsLoadingVideo(false); }}
-                  className={`bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wide px-5 rounded-md h-8 ${montserrat.className}`}
+                  className={`bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wide px-5 rounded-md h-8 ${inter.className}`}
                 >
                   Close
                 </Button>

@@ -57,7 +57,7 @@ interface SubmitResult {
 
 type PageState = "loading" | "error" | "active" | "submitting" | "completed";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://lms-smartcliff.vercel.app";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getToken = () =>

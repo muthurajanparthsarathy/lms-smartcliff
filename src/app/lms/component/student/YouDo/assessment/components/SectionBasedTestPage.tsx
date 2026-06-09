@@ -428,7 +428,7 @@ export default function SectionBasedTestPage({
       fd.append("submitType",       _secAuto ? "AUTO" : "USER")
       fd.append("autoSubmitReason", _secAuto || "")
 
-      const res = await fetch("https://lms-smartcliff.vercel.app/courses/answers/submit", {
+      const res = await fetch("https://lms-server-1-v648.onrender.com/courses/answers/submit", {
         method:  "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body:    fd,
@@ -901,10 +901,12 @@ export default function SectionBasedTestPage({
       fontFamily: "var(--lms-font, 'Inter', sans-serif)",
     }}>
 
-      {/* ── Live Screen Monitoring — parent owns sharing for all sections ── */}
+      {/* ── Live Screen Monitoring — parent owns sharing for all sections ──
+           Only active when proctoring screen recording is ON: live monitoring shares the
+           same getDisplayMedia stream, so if recording is OFF we must NOT prompt for it. */}
       <ScreenShareGuard
         assessmentId={exercise?._id ? String(exercise._id) : ""}
-        active={isYouDo && securityAgreed}
+        active={isYouDo && securityAgreed && !!securityConfig.screenRecordingEnabled}
         courseId={courseId}
         waitForSharedStream={!!securityConfig.screenRecordingEnabled}
       />

@@ -2612,7 +2612,7 @@ export default function DBQueryEditorPage({
             toast.error(`${reason} — assessment locked.`, { toastId: 'sql-face-term' });
             try {
                 const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-                await fetch('https://lms-smartcliff.vercel.app/exercise/lock', {
+                await fetch('https://lms-server-1-v648.onrender.com/exercise/lock', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({
@@ -3103,7 +3103,7 @@ export default function DBQueryEditorPage({
             }
 
             const response = await axios.post(
-                'https://lms-smartcliff.vercel.app/courses/answers/submit-multiple-files',
+                'https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files',
                 payload,
                 {
                     headers: {
@@ -3181,7 +3181,7 @@ export default function DBQueryEditorPage({
             }
 
             const response = await fetch(
-                `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseData._id}&questionId=${currentQuestion._id}&category=${category}`,
+                `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseData._id}&questionId=${currentQuestion._id}&category=${category}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -3275,7 +3275,7 @@ export default function DBQueryEditorPage({
             }
 
             const response = await fetch(
-                `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseData._id}&questionId=${currentQuestion._id}&category=${category}`,
+                `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseData._id}&questionId=${currentQuestion._id}&category=${category}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -3505,10 +3505,12 @@ export default function DBQueryEditorPage({
                 corner="bottom-left"
             />
 
-            {/* Live Screen Monitoring — standalone SQL (parent owns it in section mode) */}
+            {/* Live Screen Monitoring — standalone SQL (parent owns it in section mode).
+                Only active when proctoring screen recording is ON: live monitoring shares the
+                same getDisplayMedia stream, so if recording is OFF we must NOT prompt for it. */}
             <ScreenShareGuard
                 assessmentId={exerciseData?._id ? String(exerciseData._id) : ""}
-                active={!embedded && assessmentActive && securityAgreed}
+                active={!embedded && assessmentActive && securityAgreed && !!securityConfig.screenRecordingEnabled}
                 courseId={courseId}
                 waitForSharedStream={!!securityConfig.screenRecordingEnabled}
             />

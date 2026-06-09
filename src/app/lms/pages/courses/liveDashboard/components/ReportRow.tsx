@@ -27,10 +27,13 @@ interface ReportRowProps {
   columnCount: number;
 }
 
+// High-contrast, solid-colour badges — mirrors StudentRow so the list and
+// report views read identically. White text on a saturated background plus a
+// small dot so the three states stay distinct even on dense rows.
 const STATUS_BADGE = {
-  "not-started":  { label: "Not Started", cls: "bg-gray-100  text-gray-600" },
-  "started":      { label: "Started",     cls: "bg-amber-50  text-amber-700" },
-  "submitted":    { label: "Submitted",   cls: "bg-green-50  text-green-700" },
+  "not-started":  { label: "Not Started",  cls: "bg-slate-500   text-white", dot: "bg-white/80" },
+  "started":      { label: "Started",      cls: "bg-amber-500   text-white", dot: "bg-white"    },
+  "submitted":    { label: "Submitted",    cls: "bg-emerald-600 text-white", dot: "bg-white"    },
 } as const;
 
 // ─── Per-question status badge (used inside the expand panel) ──────────────
@@ -118,8 +121,9 @@ function ReportRowBase({
       <td className="px-4 py-3 text-[13px] text-center font-semibold text-amber-600">{nonCompleted}</td>
       <td className="px-4 py-3 text-[13px] text-center">
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-semibold whitespace-nowrap ${statusBadge.cls}`}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold whitespace-nowrap shadow-sm ${statusBadge.cls}`}
         >
+          <span className={`inline-block w-1.5 h-1.5 rounded-full ${statusBadge.dot}`} />
           {statusBadge.label}
         </span>
       </td>
