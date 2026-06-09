@@ -14,12 +14,17 @@ import {
 export const dynamic = "force-dynamic"
 
 // ── Deployment switch ────────────────────────────────────────────────────────
-// When RAILWAY_AGENT_URL is set we are running on Vercel and the real filesystem
-// lives inside the code-server container on Railway. Every fs operation is
-// forwarded to the agent (POST /__workspace/write, GET /__workspace/read).
-// When it is empty we are in local dev and fall through to the existing fs path
-// against the bind-mounted ./workspace folder.
-const AGENT_URL    = (process.env.RAILWAY_AGENT_URL || "").replace(/\/+$/, "")
+// When RAILWAY_AGENT_URL is set we forward fs operations to the agent running
+// in the same container as code-server on Railway. Otherwise we fall through
+// to the local fs path (bind-mounted ./workspace) for local dev.
+//
+// `process.env.VERCEL` is `"1"` whenever this code runs on Vercel. On Vercel
+// the local fs path can NEVER work (read-only filesystem → ENOENT mkdir
+// '/var/workspace'), so we force the agent path on with a hardcoded URL
+// fallback. Env vars still win when set — this only protects against the
+// "I forgot to add the env var / forgot to redeploy" failure mode.
+const RAILWAY_AGENT_FALLBACK = "https://docker-production-a462.up.railway.app"
+const AGENT_URL    = ((process.env.RAILWAY_AGENT_URL || (process.env.VERCEL ? RAILWAY_AGENT_FALLBACK : "")) || "").replace(/\/+$/, "")
 const AGENT_TOKEN  = process.env.AGENT_TOKEN || ""
 const BACKEND_URL  = (process.env.BACKEND_URL || "").replace(/\/+$/, "")
 const USE_AGENT    = !!AGENT_URL
