@@ -43,7 +43,7 @@ const CompilerPageContent = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5533/exercise/${exerciseId}`, {
+      const response = await fetch(`https://lms-smartcliff.vercel.app/exercise/${exerciseId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -116,7 +116,7 @@ const CompilerPageContent = () => {
       }
 
       const response = await fetch(
-        `http://localhost:5533/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+        `https://lms-smartcliff.vercel.app/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
         {
           method: 'GET',
           headers: {

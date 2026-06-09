@@ -1,7 +1,7 @@
 // apiServices/progress.ts
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5533';
+const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
 
 export interface StudentProgress {
   visitedNodes: string[];

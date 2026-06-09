@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import DashboardLayout from '../../component/layout';
 
 // --- API & UTILS ---
-const API_BASE_URL = 'http://localhost:5533';
+const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
 const ENDPOINT = '/student-Dashboard/courses-data/analytics';
 
 const fetchDashboardData = async () => {

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const API_BASE_URL = 'http://localhost:5533';
+const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
 
 // Main Component
 export default function ExerciseStudentsQuestionsFlow() {

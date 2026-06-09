@@ -253,7 +253,7 @@ function ImageToolbar({ alignment, sizePercent, onAlignmentChange, onSizeChange,
 function MCQQuestionForm({
   onClose, onSave, initialSlideNumber = 1,
   fileId, fileName, entityType, entityId, tabType, subcategory, folderPath = [],
-  apiBaseUrl = "http://localhost:5533", mcqMode = "default", sampleLink = "",
+  apiBaseUrl = "https://lms-smartcliff.vercel.app", mcqMode = "default", sampleLink = "",
   onLinkGenerated,
 }: any) {
 
@@ -785,7 +785,7 @@ export default function PPTViewer({
   totalSlides = 20,
   fileId = "", entityType = "", entityId = "",
   tabType = "", subcategory = "", folderPath = [],
-  apiBaseUrl = "http://localhost:5533",
+  apiBaseUrl = "https://lms-smartcliff.vercel.app",
   initialMcqs = [],
   isTeacher = true, isStudent = false,
   sampleLiveLink = "https://example.com/live-mcq-sample",

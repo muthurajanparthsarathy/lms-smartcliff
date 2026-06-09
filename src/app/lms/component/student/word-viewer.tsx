@@ -264,7 +264,7 @@ export default function WordViewer({
         formData.append('file', blob, `presentation.${ext}`)
         formData.append('pptUrl', fileUrl)
 
-        const res = await fetch('http://localhost:5533/api/ppt/convert', {
+        const res = await fetch('https://lms-smartcliff.vercel.app/api/ppt/convert', {
           method: 'POST',
           body: formData,
         })

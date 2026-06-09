@@ -890,7 +890,7 @@ export default function LMSPage() {
       }
 
       try {
-        const url = `http://localhost:5533/getAll/courses-data/${courseId}`;
+        const url = `https://lms-smartcliff.vercel.app/getAll/courses-data/${courseId}`;
         const response = await fetch(url);
 
         if (!response.ok) {

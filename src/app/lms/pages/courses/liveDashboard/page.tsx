@@ -272,7 +272,7 @@ function LiveDashboardInner() {
       const token =
         (typeof window !== "undefined" &&
           (localStorage.getItem("smartcliff_token") || localStorage.getItem("token"))) || "";
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5533";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://lms-smartcliff.vercel.app";
       const qs = new URLSearchParams({ assessmentId, studentId: expandedRowId });
       const res = await fetch(`${apiBase}/api/assessment/student-details?${qs.toString()}`, {
         method: "GET",

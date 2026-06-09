@@ -380,7 +380,7 @@ export default function DetailedGradePage() {
     try {
       const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || ''
       const response = await fetch(
-        `http://localhost:5533/course/${courseId}/exercises-with-scores`,
+        `https://lms-smartcliff.vercel.app/course/${courseId}/exercises-with-scores`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       )
 

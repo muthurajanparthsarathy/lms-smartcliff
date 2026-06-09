@@ -88,7 +88,7 @@ interface QuestionsProps {
   breadcrumbs?: any[];
 }
 
-const API_BASE_URL = 'http://localhost:5533';
+const API_BASE_URL = 'https://lms-smartcliff.vercel.app';
 const stripHtml = (html: string) => (html || '').replace(/<[^>]*>/g, '');
 
 // â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
