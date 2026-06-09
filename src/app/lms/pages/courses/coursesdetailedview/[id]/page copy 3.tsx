@@ -198,7 +198,7 @@ export default function LMSPage() {
   // Data fetching
   useEffect(() => {
     if(!courseId) { setError("No course ID."); setIsLoading(false); return }
-    fetch(`https://lms-server-1-v648.onrender.com/getAll/courses-data/${courseId}`)
+    fetch(`https://lms-server-3-wedg.onrender.com/getAll/courses-data/${courseId}`)
       .then(r => r.json()).then(d => {
         const info = d.data || d
         setCourseData(info)

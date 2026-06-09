@@ -329,7 +329,7 @@ export function BulkPermissionModal({ isOpen, onClose, availableUsers, roles, ba
 
   const mutation = useMutation({
     mutationFn: async (payload: { userId: string; permissions: any[] }[]) => {
-      const r = await fetch("https://lms-server-1-v648.onrender.com/user-permission/bulk-update", {
+      const r = await fetch("https://lms-server-3-wedg.onrender.com/user-permission/bulk-update", {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ userPermissions: payload }),
@@ -1518,7 +1518,7 @@ export function BulkPermissionModal({ isOpen, onClose, availableUsers, roles, ba
 //   // Bulk update mutation
 //   const bulkUpdateMutation = useMutation({
 //     mutationFn: async (userPermissions: { userId: string, permissions: any[] }[]) => {
-//       const response = await fetch('https://lms-server-1-v648.onrender.com/user-permission/bulk-update', {
+//       const response = await fetch('https://lms-server-3-wedg.onrender.com/user-permission/bulk-update', {
 //         method: 'PUT',
 //         headers: {
 //           'Authorization': `Bearer ${token}`,

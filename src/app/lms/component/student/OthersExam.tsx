@@ -552,7 +552,7 @@ const FileUploadAnswerArea: React.FC<{
       const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
       const fd = new FormData();
       fd.append('file', file);
-      const res = await fetch('https://lms-server-1-v648.onrender.com/upload/question-file', {
+      const res = await fetch('https://lms-server-3-wedg.onrender.com/upload/question-file', {
         method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
       });
       const json = await res.json();
@@ -870,7 +870,7 @@ const OthersExam: React.FC<OthersExamProps> = ({
           fd.append('code', '');
           fd.append('othersFiles', JSON.stringify(ans.files || []));
         }
-        await fetch('https://lms-server-1-v648.onrender.com/courses/answers/submit', {
+        await fetch('https://lms-server-3-wedg.onrender.com/courses/answers/submit', {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
         });
       }
@@ -893,7 +893,7 @@ const OthersExam: React.FC<OthersExamProps> = ({
         fd.append('score', '0');
         fd.append('status', 'submitted');
         fd.append('isTestSubmission', 'true');
-        await fetch('https://lms-server-1-v648.onrender.com/courses/answers/submit', {
+        await fetch('https://lms-server-3-wedg.onrender.com/courses/answers/submit', {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
         });
       }

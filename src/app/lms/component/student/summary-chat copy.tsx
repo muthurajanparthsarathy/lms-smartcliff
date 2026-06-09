@@ -48,7 +48,7 @@ interface NavigationStep {
     label: string;
 }
 
-const BACKEND_API_URL = "https://lms-server-1-v648.onrender.com";
+const BACKEND_API_URL = "https://lms-server-3-wedg.onrender.com";
 
 export default function SummaryChat({ isOpen, onClose, context }: SummaryChatProps) {
     const [messages, setMessages] = useState<Message[]>([])

@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-3-wedg.onrender.com";
 
 // Get all chat sessions for the authenticated user
 export const getChatSessions = async (token: string) => {

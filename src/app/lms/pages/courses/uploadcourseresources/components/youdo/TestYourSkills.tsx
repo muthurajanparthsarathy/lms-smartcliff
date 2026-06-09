@@ -1794,7 +1794,7 @@ const handleBankQuestionsSelected = async (selectedQuestions: any[]) => {
         const path = getEntityPath(entityPath);
         
         // IMPORTANT: Use the same testItemKey "test_your_skills" for all questions
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://lms-server-1-v648.onrender.com'}/you-do/createquestion/${path}/${nodeId}/you-do/${testItemKey}/mcq`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://lms-server-3-wedg.onrender.com'}/you-do/createquestion/${path}/${nodeId}/you-do/${testItemKey}/mcq`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json', 

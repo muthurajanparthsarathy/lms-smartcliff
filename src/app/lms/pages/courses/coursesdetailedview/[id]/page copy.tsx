@@ -890,7 +890,7 @@ export default function LMSPage() {
       }
 
       try {
-        const url = `https://lms-server-1-v648.onrender.com/getAll/courses-data/${courseId}`;
+        const url = `https://lms-server-3-wedg.onrender.com/getAll/courses-data/${courseId}`;
         const response = await fetch(url);
 
         if (!response.ok) {

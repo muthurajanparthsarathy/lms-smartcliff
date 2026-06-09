@@ -586,7 +586,7 @@ const ProgImageUploadModal: React.FC<{
       const token = localStorage.getItem('smartcliff_token');
       const fd = new FormData();
       fd.append('image', file);
-      const res = await fetch('https://lms-server-1-v648.onrender.com/upload/question-image', {
+      const res = await fetch('https://lms-server-3-wedg.onrender.com/upload/question-image', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: fd,

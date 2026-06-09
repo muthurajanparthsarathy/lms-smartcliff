@@ -374,7 +374,7 @@ function MCQQuestionForm({
   onClose, onSave,
   initialPageNumber = 1,
   fileId, fileName, entityType, entityId, tabType, subcategory, folderPath = [],
-  apiBaseUrl = "https://lms-server-1-v648.onrender.com",
+  apiBaseUrl = "https://lms-server-3-wedg.onrender.com",
   mcqMode = "default",
   sampleLink = "",
   onLinkGenerated, // NEW: callback to show link popup
@@ -807,7 +807,7 @@ export default function PDFViewer({
   fileUrl, fileName,
   fileId = "", entityType = "", entityId = "",
   tabType = "", subcategory = "", folderPath = [],
-  apiBaseUrl = "https://lms-server-1-v648.onrender.com",
+  apiBaseUrl = "https://lms-server-3-wedg.onrender.com",
   onClose,
   initialMcqs = [],
   isTeacher = true, isStudent = false,

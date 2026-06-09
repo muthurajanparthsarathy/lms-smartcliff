@@ -931,7 +931,7 @@ export default function CodeEditor({
         if (!exercise?._id) return;
         // Always re-fetch so totalMarks / totalMarksProgramming are complete
         const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || '';
-        fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
+        fetch(`https://lms-server-3-wedg.onrender.com/exercise/${exercise._id}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         })
             .then(r => r.ok ? r.json() : null)
@@ -1425,7 +1425,7 @@ function solve() {
                 subcategory: subcategory || ""
             });
 
-            const response = await fetch(`https://lms-server-1-v648.onrender.com/courses/answers/single?${params.toString()}`, {
+            const response = await fetch(`https://lms-server-3-wedg.onrender.com/courses/answers/single?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -2144,7 +2144,7 @@ function solve() {
             // Save recording URL to backend
             try {
                 const token = localStorage.getItem('smartcliff_token') || '';
-                const saveResponse = await fetch('https://lms-server-1-v648.onrender.com/assessment/recording', {
+                const saveResponse = await fetch('https://lms-server-3-wedg.onrender.com/assessment/recording', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2340,7 +2340,7 @@ function solve() {
                 formData.append('screenRecording', screenRecordingBlob, filename);
             }
 
-            await fetch('https://lms-server-1-v648.onrender.com/exercise/lock', {
+            await fetch('https://lms-server-3-wedg.onrender.com/exercise/lock', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -2644,7 +2644,7 @@ function solve() {
                 || localStorage.getItem('token')
                 || '';
 
-            const response = await fetch('https://lms-server-1-v648.onrender.com/courses/answers/submit', {
+            const response = await fetch('https://lms-server-3-wedg.onrender.com/courses/answers/submit', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
@@ -3160,7 +3160,7 @@ function solve() {
 
             try {
                 const token = localStorage.getItem('smartcliff_token') || '';
-                const response = await fetch(`https://lms-server-1-v648.onrender.com/exercise/status?courseId=${courseId}&exerciseId=${exercise._id}&category=You_Do&subcategory=${subcategory}`, {
+                const response = await fetch(`https://lms-server-3-wedg.onrender.com/exercise/status?courseId=${courseId}&exerciseId=${exercise._id}&category=You_Do&subcategory=${subcategory}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 

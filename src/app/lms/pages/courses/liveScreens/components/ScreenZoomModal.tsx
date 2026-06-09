@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, AlertTriangle, ShieldAlert, Clock, Monitor, WifiOff, ChevronDown, Send, MessageSquare, Loader2 } from "lucide-react";
 import type { ScreenStudent, ScreenViolationsResponse, ScreenViolationItem } from "../types/liveScreens.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-3-wedg.onrender.com";
 
 interface ScreenZoomModalProps {
   assessmentId: string;

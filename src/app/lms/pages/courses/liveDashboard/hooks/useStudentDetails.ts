@@ -7,7 +7,7 @@ import type {
   StudentQuestionUpdate,
 } from "../types/liveDashboard.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-3-wedg.onrender.com";
 
 interface UseStudentDetailsResult {
   studentInfo: StudentDetailsInfo | null;

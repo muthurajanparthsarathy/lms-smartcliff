@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
+const API_BASE_URL = 'https://lms-server-3-wedg.onrender.com';
 
 // Main Component
 export default function ExerciseStudentsQuestionsFlow() {

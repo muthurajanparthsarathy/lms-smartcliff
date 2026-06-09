@@ -1306,7 +1306,7 @@ const getExercisesForActivity = (): any[] => {
         setExerciseResetProgress(options?.resetProgress ?? false)
         try {
           const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || ''
-          const res = await fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
+          const res = await fetch(`https://lms-server-3-wedg.onrender.com/exercise/${exercise._id}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
           })
           if (res.ok) {

@@ -73,7 +73,7 @@ const modelMap: Record<string, { path: string }> = {
   subtopics: { path: "subtopics" },
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-3-wedg.onrender.com";
 
 const getToken = (): string | null => {
   if (typeof window !== 'undefined') {

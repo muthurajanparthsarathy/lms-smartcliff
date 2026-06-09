@@ -53,7 +53,7 @@ interface DashboardStats {
 
 const USER_DATA_KEY = "smartcliff_userData"
 const ROLE_VALUE_KEY = "smartcliff_roleValue"
-const API_BASE_URL = "https://lms-server-1-v648.onrender.com"
+const API_BASE_URL = "https://lms-server-3-wedg.onrender.com"
 
 const STAFF_ROLES = ['staff', 'programcoordinator', 'poc', 'tl', 'projectmanager', 'faculty', 'instructor', 'teacher', 'coordinator', 'manager']
 

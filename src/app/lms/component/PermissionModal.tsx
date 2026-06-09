@@ -407,7 +407,7 @@ export function PermissionModal({ isOpen, onClose, userId, userName, userEmail }
 
   const updateMutation = useMutation({
     mutationFn: async (permissions: any[]) => {
-      const response = await fetch(`https://lms-server-1-v648.onrender.com/user-permission/update/${userId}`, {
+      const response = await fetch(`https://lms-server-3-wedg.onrender.com/user-permission/update/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -445,7 +445,7 @@ useEffect(() => {
       setExpandedCategories([permissionCategories[0].key])
     }
 
-    fetch(`https://lms-server-1-v648.onrender.com/user/get-permission/${userId}`, {
+    fetch(`https://lms-server-3-wedg.onrender.com/user/get-permission/${userId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.ok ? res.json() : Promise.reject())

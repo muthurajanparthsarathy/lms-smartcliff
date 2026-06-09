@@ -42,7 +42,7 @@ const CompilerPageContent = () => {
         return;
       }
 
-      const response = await fetch(`https://lms-server-1-v648.onrender.com/exercise/${exerciseId}`, {
+      const response = await fetch(`https://lms-server-3-wedg.onrender.com/exercise/${exerciseId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -115,7 +115,7 @@ const CompilerPageContent = () => {
       }
 
       const response = await fetch(
-        `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+        `https://lms-server-3-wedg.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
         {
           method: 'GET',
           headers: {

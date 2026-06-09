@@ -265,7 +265,7 @@ const FrontendQuestion: React.FC<FrontendQuestionProps> = ({
       formData.append('nodeType', 'frontend');
       formData.append('language', 'html');
 
-      const response = await fetch('https://lms-server-1-v648.onrender.com/courses/answers/submit', {
+      const response = await fetch('https://lms-server-3-wedg.onrender.com/courses/answers/submit', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData,

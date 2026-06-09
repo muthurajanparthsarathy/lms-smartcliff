@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://lms-server-1-v648.onrender.com';
+const API_BASE_URL = 'https://lms-server-3-wedg.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

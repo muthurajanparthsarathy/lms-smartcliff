@@ -23,7 +23,7 @@ const GEMINI_API_KEY = "AIzaSyDXTexkHW8M62kXYXGuNgwV_n1pBwsWANs"
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // Backend API URL - adjust based on your environment
-const BACKEND_API_URL = "https://lms-server-1-v648.onrender.com"
+const BACKEND_API_URL = "https://lms-server-3-wedg.onrender.com"
 
 export default function AIPanel({ isOpen, onClose, fileUrl, title, fileType }: AIPanelProps) {
   const [prompt, setPrompt] = useState("")

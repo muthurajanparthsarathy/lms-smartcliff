@@ -428,7 +428,7 @@ export default function SectionBasedTestPage({
       fd.append("submitType",       _secAuto ? "AUTO" : "USER")
       fd.append("autoSubmitReason", _secAuto || "")
 
-      const res = await fetch("https://lms-server-1-v648.onrender.com/courses/answers/submit", {
+      const res = await fetch("https://lms-server-3-wedg.onrender.com/courses/answers/submit", {
         method:  "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body:    fd,

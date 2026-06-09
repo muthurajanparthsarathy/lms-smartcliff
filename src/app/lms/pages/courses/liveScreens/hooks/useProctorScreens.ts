@@ -10,7 +10,7 @@ import type {
   ScreenStudentViolation,
 } from "../types/liveScreens.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-1-v648.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://lms-server-3-wedg.onrender.com";
 
 interface UseProctorScreensArgs {
   assessmentId: string;
