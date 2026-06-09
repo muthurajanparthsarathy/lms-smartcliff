@@ -1,0 +1,27 @@
+{
+  "pages": {
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/lms/pages/courses/uploadcourseresources/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/lms/pages/courses/uploadcourseresources/page.css",
+      "static/chunks/app/lms/pages/courses/uploadcourseresources/page.js"
+    ],
+    "/lms/pages/courses/coursesdetailedview/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/lms/pages/courses/coursesdetailedview/[id]/page.css",
+      "static/chunks/app/lms/pages/courses/coursesdetailedview/[id]/page.js"
+    ],
+    "/lms/pages/admindashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/lms/pages/admindashboard/page.js"
+    ]
+  }
+}
