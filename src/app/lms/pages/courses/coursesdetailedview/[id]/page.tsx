@@ -1140,20 +1140,59 @@ const extractAllFilesFromFolders = (folders: any[]): Resource[] => {
   }
 
 const getExercisesForActivity = (): any[] => {
-  if (!selectedMethod || !selectedActivity || !selectedItem?.pedagogy) return []
+  if (!selectedMethod || !selectedActivity) return []
   try {
-    const mk: Record<string, "I_Do" | "We_Do" | "You_Do"> = { 
-      "i-do": "I_Do", 
-      "we-do": "We_Do", 
-      "you-do": "You_Do" 
+    const mk: Record<string, "I_Do" | "We_Do" | "You_Do"> = {
+      "i-do": "I_Do",
+      "we-do": "We_Do",
+      "you-do": "You_Do"
     }
     const tk = mk[selectedMethod]
     if (!tk) return []
+
+    const tKey = normalizeKey(selectedActivity)
+
+    // ── You Do → Assessment: shared common list across the whole course ──
+    // By design, the student should see every assessment in the course
+    // without having to drill into each hierarchy node looking for assigned
+    // work. So when the student lands on any hierarchy node and opens
+    // You Do → Assessment, we walk the entire course tree and aggregate
+    // every node's pedagogy.You_Do.assessments (incl. the legacy spelling
+    // variants) into one de-duplicated list. All other subcategories keep
+    // the existing per-node behaviour below.
+    const ASSESSMENT_KEYS = new Set(["assessment", "assessments", "assesment", "assesments"])
+    if (tk === "You_Do" && ASSESSMENT_KEYS.has(tKey)) {
+      const collected: any[] = []
+      const seen = new Set<string>()
+      const walk = (node: any) => {
+        if (!node) return
+        const yd = node?.pedagogy?.You_Do
+        if (yd && typeof yd === 'object' && !Array.isArray(yd)) {
+          for (const key of ASSESSMENT_KEYS) {
+            const arr = (yd as any)[key]
+            if (Array.isArray(arr)) {
+              for (const ex of arr) {
+                const id = ex?._id ? String(ex._id) : ''
+                if (id && !seen.has(id)) {
+                  seen.add(id)
+                  collected.push(ex)
+                }
+              }
+            }
+          }
+        }
+        ;(node.subModules || []).forEach(walk)
+        ;(node.topics || []).forEach(walk)
+        ;(node.subTopics || []).forEach(walk)
+      }
+      ;(courseData?.modules || []).forEach(walk)
+      return collected
+    }
+
+    if (!selectedItem?.pedagogy) return []
     const cat = selectedItem.pedagogy[tk]
     if (!cat || typeof cat !== 'object') return []
-    
-    const tKey = normalizeKey(selectedActivity)
-    
+
     // Check if it's "test_your_skills" in You Do
     if (tk === "You_Do" && tKey === "test_your_skills") {
       const testData = (cat as any)["test_your_skills"]
