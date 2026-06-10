@@ -1958,9 +1958,15 @@ const isNonGraded = !!(
       return answers;
     };
 
-    const weDoAnswers = extractAll(course.answers.We_Do);
-    const youDoAnswers = extractAll(course.answers.You_Do);
-    return [...weDoAnswers, ...youDoAnswers];
+    // Iterate every category (I_Do / We_Do / You_Do — and anything future)
+    // instead of hardcoding two. Previously I_Do was missing, so any student
+    // whose submission landed under I_Do showed as "Not Submitted Yet" on the
+    // review screen even though their files were in Mongo.
+    const all: ExerciseAnswer[] = [];
+    Object.values(course.answers).forEach((catObj) => {
+      all.push(...extractAll(catObj));
+    });
+    return all;
   };
 
   const getExerciseAnswersForSelectedExercise = (participant: Participant): ExerciseAnswer[] => {
