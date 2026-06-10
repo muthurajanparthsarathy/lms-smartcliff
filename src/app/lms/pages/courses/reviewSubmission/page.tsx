@@ -1971,9 +1971,23 @@ const isNonGraded = !!(
 
   const getExerciseAnswersForSelectedExercise = (participant: Participant): ExerciseAnswer[] => {
     const all = getExerciseAnswers(participant);
-    return selectedExercise ?
-      all.filter(a => a.exerciseId === selectedExercise._id) :
-      all;
+    if (!selectedExercise) return all;
+    // Use the SAME defensive comparison as getExerciseAnswersForExercise above:
+    // some submissions store exerciseId as the Exercise document _id, others as
+    // exerciseInformation.exerciseId (legacy / different code path). The strict
+    // `===` version missed the latter, so those students showed up as
+    // "Not Submitted Yet" on the participant list even though their answers
+    // were in Mongo. String() coerces ObjectId-vs-string mismatches too.
+    const exId = String(selectedExercise._id || "");
+    const exInfoId = String(selectedExercise.exerciseInformation?.exerciseId || "");
+    return all.filter(a => {
+      const aid = String(a.exerciseId || "");
+      if (!aid) return false;
+      if (exId && aid === exId) return true;
+      if (exInfoId && aid === exInfoId) return true;
+      if (exId && aid.includes(exId)) return true;
+      return false;
+    });
   };
 
   const getSubmissionForQuestion = (questionId: string): SubmissionQuestion | null => {
