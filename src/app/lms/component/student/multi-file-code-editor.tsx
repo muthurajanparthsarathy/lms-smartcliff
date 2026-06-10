@@ -126,9 +126,14 @@ export default function MultiFileCodeEditor({
   courseName,
   hierarchy = [],
 }: MultiFileCodeEditorProps) {
+  // Env var wins. Otherwise: localhost in local dev, Railway agent in prod.
+  // (Hostname check so the Vercel deploy never tries to hit the user's own
+  // localhost:8080, which has nothing running and renders as a broken iframe.)
   const CODE_SERVER_URL =
-    process.env.NEXT_PUBLIC_CODE_SERVER_URL || "http://localhost:8080"
-    // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-production-a462.up.railway.app"
+    process.env.NEXT_PUBLIC_CODE_SERVER_URL ||
+    (typeof window !== "undefined" && !/^(localhost|127\.|0\.0\.0\.0)/.test(window.location.hostname)
+      ? "https://docker-production-a462.up.railway.app"
+      : "http://localhost:8080")
 
   // ─── Per-student workspace isolation ─────────────────────────────────────────
   // Each student gets their OWN folder inside the shared workspace so they can
