@@ -46,9 +46,15 @@ export default function StaffCodeReview({
   submittedAt, attemptCount, lateSubmission, lastTestSubmittedAt,
   submissionId, selectedLanguages,
 }: StaffCodeReviewProps) {
+  // Env var wins. Otherwise: localhost in local dev, Railway agent in prod.
+  // Must point to the SAME agent the Vercel /api/workspace route writes to
+  // (RAILWAY_AGENT_URL / fallback = docker-production-a462), otherwise the
+  // iframe opens an empty folder because the review files live on another box.
   const CODE_SERVER_URL =
-    process.env.NEXT_PUBLIC_CODE_SERVER_URL || "http://localhost:8080"
-      // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-file-production-9bf1.up.railway.app"
+    process.env.NEXT_PUBLIC_CODE_SERVER_URL ||
+    (typeof window !== "undefined" && !/^(localhost|127\.|0\.0\.0\.0)/.test(window.location.hostname)
+      ? "https://docker-production-a462.up.railway.app"
+      : "http://localhost:8080")
 
   const reviewId = submissionId || "current"
   const reviewSubdir = `_review/${reviewId}`
