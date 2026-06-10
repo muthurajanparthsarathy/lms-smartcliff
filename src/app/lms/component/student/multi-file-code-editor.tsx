@@ -127,8 +127,8 @@ export default function MultiFileCodeEditor({
   hierarchy = [],
 }: MultiFileCodeEditorProps) {
   const CODE_SERVER_URL =
-    // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "http://localhost:8080"
-    process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-production-a462.up.railway.app"
+  "https://docker-production-a462.up.railway.app:https://lms-server-3-wedg.onrender.com"
+    // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-file-production-9bf1.up.railway.app"
 
   // ─── Per-student workspace isolation ─────────────────────────────────────────
   // Each student gets their OWN folder inside the shared workspace so they can
@@ -141,7 +141,7 @@ export default function MultiFileCodeEditor({
   })
 
   // ─── Set Nginx sticky-session cookie BEFORE iframe loads ────────────────────
-  // Hits /cs-init once to set the cs_node cookie on the :8080 origin so Nginx
+  // Hits /cs-init once to set the cs_node cookie on the :https://lms-server-3-wedg.onrender.com origin so Nginx
   // routes ALL iframe requests (including WebSocket) to the same code-server.
   useEffect(() => {
     fetch(`${CODE_SERVER_URL}/cs-init?uid=${encodeURIComponent(studentSubdir)}`, {
@@ -261,7 +261,7 @@ export default function MultiFileCodeEditor({
     setFullExercise(exercise || null)
     if (!exercise?._id) return
     const token = localStorage.getItem('smartcliff_token') || localStorage.getItem('token') || ''
-    fetch(`https://lms-server-1-v648.onrender.com/exercise/${exercise._id}`, {
+    fetch(`https://lms-server-3-wedg.onrender.com/exercise/${exercise._id}`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     })
       .then(r => r.ok ? r.json() : null)
@@ -435,7 +435,7 @@ export default function MultiFileCodeEditor({
     try {
       const token = localStorage.getItem("smartcliff_token") || localStorage.getItem("token") || ""
       const res = await fetch(
-        `https://lms-server-1-v648.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
+        `https://lms-server-3-wedg.onrender.com/courses/answers/previous-submission?courseId=${courseId}&exerciseId=${exerciseId}&questionId=${questionId}&category=${category}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
       if (!res.ok) return null
@@ -620,7 +620,7 @@ export default function MultiFileCodeEditor({
       isTestSubmission,
     }
     const res = await axios.post(
-      "https://lms-server-1-v648.onrender.com/courses/answers/submit-multiple-files",
+      "https://lms-server-3-wedg.onrender.com/courses/answers/submit-multiple-files",
       payload,
       { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } },
     )
