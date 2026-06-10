@@ -265,40 +265,53 @@ async function agentClear(subdir: string): Promise<void> {
   await fetch(url, { method: "DELETE", headers: authHeaders(), cache: "no-store" })
 }
 
-// Load the most recent saved workspace from Mongo via the backend.
-// Returns [] if nothing is stored or the backend is unreachable.
-async function mongoLoad(userId: string, courseId: string): Promise<ClientFile[]> {
-  if (!BACKEND_URL || !userId) return []
+// ─── Per-question draft persistence ──────────────────────────────────────────
+// Keyed by (userId from JWT, exerciseId, questionId) — handled by the backend
+// at /draft/save and /draft/load. The student's JWT is forwarded as a Bearer
+// header; backend derives userId from it, so the URL never trusts a body field.
+
+async function draftLoad(
+  authHeader: string,
+  exerciseId: string,
+  questionId: string,
+): Promise<ClientFile[]> {
+  if (!BACKEND_URL || !authHeader || !exerciseId || !questionId) return []
   try {
-    const url = `${BACKEND_URL}/get/student-workspace/${encodeURIComponent(userId)}/${encodeURIComponent(courseId || "default")}`
-    const r = await fetch(url, { cache: "no-store" })
+    const url = `${BACKEND_URL}/draft/load?exerciseId=${encodeURIComponent(exerciseId)}&questionId=${encodeURIComponent(questionId)}`
+    const r = await fetch(url, {
+      headers: { Authorization: authHeader },
+      cache: "no-store",
+    })
     if (!r.ok) return []
     const j = await r.json()
-    const files: AgentFile[] = Array.isArray(j?.workspace?.files) ? j.workspace.files : []
+    const files: AgentFile[] = Array.isArray(j?.draft?.files) ? j.draft.files : []
     return toClientFiles(files)
   } catch {
     return []
   }
 }
 
-// Persist the workspace to Mongo. Fire-and-forget — agent disk is still source
-// of truth between calls.
-async function mongoSave(
-  userId: string,
-  courseId: string,
+async function draftSave(
+  authHeader: string,
+  exerciseId: string,
+  questionId: string,
   language: SupportedLanguage,
   files: Array<{ path: string; content: string }>,
 ) {
-  if (!BACKEND_URL || !userId) return
+  if (!BACKEND_URL || !authHeader || !exerciseId || !questionId) return
   try {
-    await fetch(`${BACKEND_URL}/save/student-workspace`, {
+    await fetch(`${BACKEND_URL}/draft/save`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: authHeader },
       body: JSON.stringify({
-        userId,
-        courseId: courseId || "default",
+        exerciseId,
+        questionId,
         language,
-        files: files.map((f) => ({ name: f.path.split("/").pop() || "", path: f.path, content: f.content })),
+        files: files.map((f) => ({
+          name: f.path.split("/").pop() || "",
+          path: f.path,
+          content: f.content,
+        })),
       }),
       cache: "no-store",
     })
@@ -367,11 +380,15 @@ function buildAgentFiles(
 
 // ── GET: read the real files the student edited in code-server ──────────────
 // optional ?subdir=_review/<id> to read a specific review folder
+// optional ?exerciseId=...&questionId=... to enable per-question draft rehydration
 export async function GET(req: NextRequest) {
   try {
     const subdir = req.nextUrl.searchParams.get("subdir") || undefined
+    const exerciseId = req.nextUrl.searchParams.get("exerciseId") || ""
+    const questionId = req.nextUrl.searchParams.get("questionId") || ""
+    const authHeader = req.headers.get("authorization") || ""
 
-    // ── Production: read from Railway agent (with Mongo fallback) ──────────
+    // ── Production: read from Railway agent (with draft fallback) ──────────
     if (USE_AGENT) {
       if (!subdir) return NextResponse.json({ ok: false, error: "subdir required" }, { status: 400 })
       let files: ClientFile[] = []
@@ -381,20 +398,19 @@ export async function GET(req: NextRequest) {
         files = []
       }
       // If the container's disk is empty (cold start / volume wiped), restore
-      // from Mongo so the student sees their last saved files.
-      if (files.length === 0) {
-        const { userId, courseId } = resolveIdentity({}, subdir)
-        const fromMongo = await mongoLoad(userId, courseId)
-        if (fromMongo.length > 0) {
+      // from the per-question draft so the student sees their last typed work.
+      if (files.length === 0 && exerciseId && questionId && authHeader) {
+        const fromDraft = await draftLoad(authHeader, exerciseId, questionId)
+        if (fromDraft.length > 0) {
           try {
             await agentWrite(
               subdir,
-              fromMongo.map((f) => ({ path: f.path, content: f.content })),
+              fromDraft.map((f) => ({ path: f.path, content: f.content })),
               true,
             )
-            files = fromMongo
+            files = fromDraft
           } catch {
-            files = fromMongo
+            files = fromDraft
           }
         }
       }
@@ -427,7 +443,35 @@ export async function POST(req: NextRequest) {
     // ── Production: forward to Railway agent ──────────────────────────────
     if (USE_AGENT) {
       if (!subdir) return NextResponse.json({ ok: false, error: "subdir required" }, { status: 400 })
-      const { userId, courseId } = resolveIdentity(body, subdir)
+      // resolveIdentity kept for legacy callers; the new per-question draft
+      // path takes the userId from the JWT instead.
+      resolveIdentity(body, subdir)
+      const exerciseId: string = body.exerciseId ? String(body.exerciseId) : ""
+      const questionId: string = body.questionId ? String(body.questionId) : ""
+      const authHeader = req.headers.get("authorization") || ""
+      const canDraft = !!(exerciseId && questionId && authHeader && !isReview)
+
+      // SYNC: read whatever is on disk and push it to the per-question draft.
+      // No file mutation — used by the periodic 15-second backup timer in the
+      // editor so typed work survives a Railway restart.
+      if (body.sync) {
+        const existing = await agentRead(subdir)
+        if (canDraft) {
+          const draftLang =
+            (normalizeLanguage(body.language || body.active || "") as SupportedLanguage) ||
+            (existing[0] ? (detectLanguageFromFilename(existing[0].filename) as SupportedLanguage) : "python")
+          void draftSave(
+            authHeader,
+            exerciseId,
+            questionId,
+            draftLang,
+            existing
+              .filter((f) => !f.path.startsWith("/.vscode/") && f.path !== "/tsconfig.json")
+              .map((f) => ({ path: f.path, content: f.content })),
+          )
+        }
+        return NextResponse.json({ ok: true, synced: canDraft, files: existing })
+      }
 
       // PRUNE: drop files whose extension belongs to a different recognized
       // language. Agent has no partial-delete, so we read → filter → rewrite.
@@ -446,6 +490,18 @@ export async function POST(req: NextRequest) {
           }
         }
         const files = await agentWrite(subdir, kept, true)
+        if (canDraft) {
+          const draftLang = (normalizeLanguage(body.prune) as SupportedLanguage) || "python"
+          void draftSave(
+            authHeader,
+            exerciseId,
+            questionId,
+            draftLang,
+            files
+              .filter((f) => !f.path.startsWith("/.vscode/") && f.path !== "/tsconfig.json")
+              .map((f) => ({ path: f.path, content: f.content })),
+          )
+        }
         return NextResponse.json({ ok: true, pruned: true, removed, files })
       }
 
@@ -457,6 +513,19 @@ export async function POST(req: NextRequest) {
           .filter((f) => f.path)
           .map((f) => ({ path: "/" + f.path, content: f.content }))
         const files = await agentWrite(subdir, incoming, false)
+        if (canDraft) {
+          const draftLang =
+            (normalizeLanguage(body.language || body.active || "") as SupportedLanguage) || "python"
+          void draftSave(
+            authHeader,
+            exerciseId,
+            questionId,
+            draftLang,
+            files
+              .filter((f) => !f.path.startsWith("/.vscode/") && f.path !== "/tsconfig.json")
+              .map((f) => ({ path: f.path, content: f.content })),
+          )
+        }
         return NextResponse.json({ ok: true, added: true, created: incoming.map((f) => f.path), skipped: [], files })
       }
 
@@ -490,13 +559,18 @@ export async function POST(req: NextRequest) {
       }
       const files = await agentWrite(subdir, toWrite, replace)
 
-      // Best-effort Mongo persistence (only for live student workspaces).
-      if (!isReview) {
-        void mongoSave(
-          userId,
-          courseId,
+      // Best-effort draft persistence (live student workspaces only). We save
+      // the *resulting* file list so the draft stays in sync with disk after a
+      // seed, restore, or replace.
+      if (canDraft) {
+        void draftSave(
+          authHeader,
+          exerciseId,
+          questionId,
           active,
-          toWrite.filter((f) => !f.path.startsWith("/.vscode/") && f.path !== "/tsconfig.json"),
+          files
+            .filter((f) => !f.path.startsWith("/.vscode/") && f.path !== "/tsconfig.json")
+            .map((f) => ({ path: f.path, content: f.content })),
         )
       }
       return NextResponse.json({

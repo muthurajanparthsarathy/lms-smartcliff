@@ -127,8 +127,8 @@ export default function MultiFileCodeEditor({
   hierarchy = [],
 }: MultiFileCodeEditorProps) {
   const CODE_SERVER_URL =
-    // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "http://localhost:8080"
-    process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-production-a462.up.railway.app"
+    process.env.NEXT_PUBLIC_CODE_SERVER_URL || "http://localhost:8080"
+    // process.env.NEXT_PUBLIC_CODE_SERVER_URL || "https://docker-production-a462.up.railway.app"
 
   // ─── Per-student workspace isolation ─────────────────────────────────────────
   // Each student gets their OWN folder inside the shared workspace so they can
@@ -324,15 +324,33 @@ export default function MultiFileCodeEditor({
     return () => clearInterval(timer)
   }, [exData?.exerciseInformation?.totalDuration])
 
+  // Build an Authorization header from whichever JWT key is in localStorage.
+  // Forwarded to /api/workspace so the backend draft endpoints can derive
+  // userId from the token rather than trusting a body field.
+  const buildAuthHeaders = useCallback((): Record<string, string> => {
+    const token =
+      (typeof window !== "undefined" &&
+        (localStorage.getItem("smartcliff_token") || localStorage.getItem("token"))) ||
+      ""
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }, [])
+
   // ─── Workspace API helpers ──────────────────────────────────────────────────
   const postWorkspace = useCallback(
     async (payload: any): Promise<FileNode[] | null> => {
       try {
         const res = await fetch("/api/workspace", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          // Always scope every operation to this student's own subfolder.
-          body: JSON.stringify({ subdir: studentSubdir, ...payload }),
+          headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
+          // Always scope every operation to this student's own subfolder, and
+          // include the current exercise/question so the per-question draft
+          // store on the backend stays in sync.
+          body: JSON.stringify({
+            subdir: studentSubdir,
+            exerciseId: exercise?._id,
+            questionId: currentQuestion?._id,
+            ...payload,
+          }),
         })
         const data = await res.json()
         if (data?.ok && Array.isArray(data.files)) return data.files.map(mapApiFile)
@@ -343,7 +361,7 @@ export default function MultiFileCodeEditor({
         return null
       }
     },
-    [addLog, studentSubdir],
+    [addLog, studentSubdir, buildAuthHeaders, exercise?._id, currentQuestion?._id],
   )
 
   // Ensure the active language's starter file exists (never wipes existing edits).
@@ -361,19 +379,24 @@ export default function MultiFileCodeEditor({
   )
 
   // Read the REAL files the student edited in code-server (from disk).
+  // Passes exerciseId+questionId so a cold-start container can lazily restore
+  // from the per-question draft before returning.
   const readWorkspaceFiles = useCallback(async (): Promise<FileNode[]> => {
     try {
-      const res = await fetch(
-        `/api/workspace?subdir=${encodeURIComponent(studentSubdir)}`,
-        { cache: "no-store" },
-      )
+      const qs = new URLSearchParams({ subdir: studentSubdir })
+      if (exercise?._id) qs.set("exerciseId", String(exercise._id))
+      if (currentQuestion?._id) qs.set("questionId", String(currentQuestion._id))
+      const res = await fetch(`/api/workspace?${qs.toString()}`, {
+        cache: "no-store",
+        headers: buildAuthHeaders(),
+      })
       const data = await res.json()
       if (data?.ok && Array.isArray(data.files) && data.files.length > 0) {
         return data.files.map(mapApiFile)
       }
     } catch { /* fall through */ }
     return files
-  }, [files, studentSubdir])
+  }, [files, studentSubdir, exercise?._id, currentQuestion?._id, buildAuthHeaders])
 
   // Visualizer (Python Tutor embed) — opens after `readWorkspaceFiles` is in
   // scope, otherwise we'd hit a temporal-dead-zone error on initial render.
@@ -565,8 +588,13 @@ export default function MultiFileCodeEditor({
       try {
         const res = await fetch("/api/workspace", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subdir: studentSubdir, prune: selectedLanguage }),
+          headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
+          body: JSON.stringify({
+            subdir: studentSubdir,
+            exerciseId: exercise?._id,
+            questionId: currentQuestion?._id,
+            prune: selectedLanguage,
+          }),
         })
         const data = await res.json()
         if (data?.ok && Array.isArray(data.removed) && data.removed.length > 0) {
@@ -581,7 +609,46 @@ export default function MultiFileCodeEditor({
       finally { busy = false }
     }, 3000)
     return () => clearInterval(id)
-  }, [workspaceReady, selectedLanguage, seeding, studentSubdir])
+  }, [workspaceReady, selectedLanguage, seeding, studentSubdir, exercise?._id, currentQuestion?._id, buildAuthHeaders])
+
+  // ─── Periodic disk → draft sync (the new persistence safety net) ────────────
+  // Every 15 seconds while a question is open, push the current disk state to
+  // the per-question draft on the backend. A Railway restart can then rehydrate
+  // the container disk from the draft when the student reopens the question.
+  // One final flush runs in cleanup (uses keepalive so it survives a tab close
+  // or in-app navigation away from this question).
+  useEffect(() => {
+    const exerciseId = exercise?._id
+    const questionId = currentQuestion?._id
+    if (!workspaceReady || !exerciseId || !questionId) return
+
+    let busy = false
+    const sync = async (final = false) => {
+      if (busy) return
+      busy = true
+      try {
+        await fetch("/api/workspace", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
+          body: JSON.stringify({
+            subdir: studentSubdir,
+            exerciseId,
+            questionId,
+            language: selectedLanguage,
+            sync: true,
+          }),
+          keepalive: final,
+        })
+      } catch { /* draft sync is best-effort */ }
+      finally { busy = false }
+    }
+
+    const id = setInterval(() => { void sync(false) }, 15000)
+    return () => {
+      clearInterval(id)
+      void sync(true)
+    }
+  }, [workspaceReady, exercise?._id, currentQuestion?._id, studentSubdir, selectedLanguage, buildAuthHeaders])
 
   // ═════════════════════════════════════════════════════════════════════════════
   // Submit — always read the REAL files from the workspace first
