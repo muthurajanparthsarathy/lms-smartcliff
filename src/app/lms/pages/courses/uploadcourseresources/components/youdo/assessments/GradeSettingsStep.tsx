@@ -270,19 +270,21 @@ export const GradeSettingsStep: React.FC<GradeSettingsStepProps> = ({
                 info="Auto-calculated from total marks"
                 autoValue={formData.totalMarks || 'Auto'}
               />
+              {/* Same generic pass-mark field as the MCQ / Programming branches —
+                  programmingGradeToPass was never persisted by the modal. */}
               <GradeRow
                 icon={<Award size={13} />}
                 color={D.orange}
                 label="Mark to Pass"
-                info="Minimum marks required to pass — cannot exceed Total Mark (optional)"
-                fieldKey="programmingGradeToPass"
-                value={g.programmingGradeToPass}
+                info={`Minimum marks required to pass — cannot exceed Total Mark${formData.totalMarks ? ` (${formData.totalMarks})` : ''} (optional)`}
+                fieldKey="mcqGradeToPass"
+                value={g.mcqGradeToPass}
                 onChange={(v: any) =>
-                  setFormData(prev => ({ ...prev, grades: { ...prev.grades, programmingGradeToPass: v } }))
+                  setFormData(prev => ({ ...prev, grades: { ...prev.grades, mcqGradeToPass: v } }))
                 }
-                onBlur={() => markTouched('programmingGradeToPass')}
-                error={ve.programmingGradeToPass}
-                errorTouched={tf.has('programmingGradeToPass')}
+                onBlur={() => markTouched('mcqGradeToPass')}
+                error={ve.mcqGradeToPass}
+                errorTouched={tf.has('mcqGradeToPass')}
                 optional
               />
               {renderSectionBasedToggle(D.orange)}
@@ -292,33 +294,36 @@ export const GradeSettingsStep: React.FC<GradeSettingsStepProps> = ({
 
           {et === 'Programming' && (
             <>
+              {/* Total Mark is entered once in Exercise Details (formData.totalMarks,
+                  persisted as exerciseInformation.totalMarks). It used to be an
+                  editable field bound to grades.programmingGrade — a field that was
+                  never initialized, validated, or included in the save payload, so
+                  it always rendered 0 and silently dropped whatever was typed.
+                  Display the Exercise Details value read-only instead, exactly like
+                  the MCQ and Other branches. */}
               <GradeRow
                 icon={<Terminal size={13} />}
                 color={D.orange}
                 label="Total Mark"
-                info="Total marks for the exercise"
-                fieldKey="programmingGrade"
-                value={g.programmingGrade}
-                onChange={(v: any) =>
-                  setFormData(prev => ({ ...prev, grades: { ...prev.grades, programmingGrade: v } }))
-                }
-                onBlur={() => markTouched('programmingGrade')}
-                error={ve.programmingGrade}
-                errorTouched={tf.has('programmingGrade')}
+                info="Auto-filled from Total Marks in Exercise Details"
+                autoValue={formData.totalMarks || 'Auto'}
               />
+              {/* mcqGradeToPass is the modal's generic pass-mark field: it is the
+                  one validated against formData.totalMarks and the only one sent
+                  in gradeSettings — programmingGradeToPass was another dead field. */}
               <GradeRow
                 icon={<Award size={13} />}
                 color={D.orange}
                 label="Mark to Pass"
-                info="Minimum marks required to pass — cannot exceed Total Mark (optional)"
-                fieldKey="programmingGradeToPass"
-                value={g.programmingGradeToPass}
+                info={`Minimum marks required to pass — cannot exceed Total Mark${formData.totalMarks ? ` (${formData.totalMarks})` : ''} (optional)`}
+                fieldKey="mcqGradeToPass"
+                value={g.mcqGradeToPass}
                 onChange={(v: any) =>
-                  setFormData(prev => ({ ...prev, grades: { ...prev.grades, programmingGradeToPass: v } }))
+                  setFormData(prev => ({ ...prev, grades: { ...prev.grades, mcqGradeToPass: v } }))
                 }
-                onBlur={() => markTouched('programmingGradeToPass')}
-                error={ve.programmingGradeToPass}
-                errorTouched={tf.has('programmingGradeToPass')}
+                onBlur={() => markTouched('mcqGradeToPass')}
+                error={ve.mcqGradeToPass}
+                errorTouched={tf.has('mcqGradeToPass')}
                 optional
               />
               {renderSectionBasedToggle(D.orange)}
