@@ -418,6 +418,9 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Local dev: read straight off the bind-mounted workspace ────────────
+    if (!subdir) {
+      return NextResponse.json({ ok: false, error: "subdir required" }, { status: 400 })
+    }
     const baseDir = resolveBaseDir(subdir)
     const files = await readFilesIn(baseDir)
     return NextResponse.json({ ok: true, files, baseDir })
@@ -583,6 +586,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Local dev: existing fs-based behavior ─────────────────────────────
+    // Reject empty subdir explicitly so a missing field can't silently write
+    // into the workspace ROOT (which would leak .vscode/, main.py etc. into
+    // every student's view and looks like a per-student folder didn't get
+    // created). The agent path already enforces this above.
+    if (!subdir) {
+      return NextResponse.json({ ok: false, error: "subdir required" }, { status: 400 })
+    }
     const baseDir = resolveBaseDir(subdir)
 
     // ── Prune mode: delete files that don't match the allowed language ──────────
