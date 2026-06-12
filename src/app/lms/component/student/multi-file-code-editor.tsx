@@ -341,30 +341,54 @@ export default function MultiFileCodeEditor({
   }, [])
 
   // ─── Workspace API helpers ──────────────────────────────────────────────────
+  // Retries the POST up to 3 times with backoff on transient failures, and
+  // surfaces the FINAL error as a visible toast so misconfiguration (e.g. a
+  // mismatched AGENT_TOKEN env var between Vercel and the Railway container)
+  // doesn't fail silently. Previously a failure was only logged to the small
+  // status bar, which made it look like the workspace was set up correctly
+  // when it actually was not — code-server then showed an empty folder while
+  // the React UI thought everything was fine.
   const postWorkspace = useCallback(
     async (payload: any): Promise<FileNode[] | null> => {
-      try {
-        const res = await fetch("/api/workspace", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
-          // Always scope every operation to this student's own subfolder, and
-          // include the current exercise/question so the per-question draft
-          // store on the backend stays in sync.
-          body: JSON.stringify({
-            subdir: studentSubdir,
-            exerciseId: exercise?._id,
-            questionId: currentQuestion?._id,
-            ...payload,
-          }),
-        })
-        const data = await res.json()
-        if (data?.ok && Array.isArray(data.files)) return data.files.map(mapApiFile)
-        addLog("error", `Workspace prepare failed: ${data?.error || "unknown"}`)
-        return null
-      } catch (e: any) {
-        addLog("error", `Workspace error: ${e?.message || e}`)
-        return null
+      const isSilent = payload && (payload.sync === true || payload.prune)
+      const body = JSON.stringify({
+        subdir: studentSubdir,
+        exerciseId: exercise?._id,
+        questionId: currentQuestion?._id,
+        ...payload,
+      })
+      const attempts = isSilent ? 1 : 3
+      let lastErr = ""
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const res = await fetch("/api/workspace", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
+            body,
+          })
+          const data = await res.json().catch(() => ({}))
+          if (data?.ok && Array.isArray(data.files)) return data.files.map(mapApiFile)
+          lastErr = data?.error || `HTTP ${res.status}`
+        } catch (e: any) {
+          lastErr = e?.message || String(e)
+        }
+        if (i < attempts - 1) await new Promise((r) => setTimeout(r, 800 * (i + 1)))
       }
+      addLog("error", `Workspace prepare failed: ${lastErr}`)
+      // Don't spam toasts on the silent paths (3-second prune polling and the
+      // 15-second draft sync timer). Both are best-effort and would otherwise
+      // raise a notification every cycle while the backend is down.
+      if (!isSilent) {
+        toast.error(
+          `Workspace setup failed: ${lastErr}. Your code will NOT be saved — refresh, or contact your instructor.`,
+          { duration: 8000 },
+        )
+        // Loud console.error so an admin can diagnose env-var / token issues
+        // from the browser devtools.
+        // eslint-disable-next-line no-console
+        console.error("[multi-file-code-editor] workspace prepare failed", { lastErr, payload })
+      }
+      return null
     },
     [addLog, studentSubdir, buildAuthHeaders, exercise?._id, currentQuestion?._id],
   )
